@@ -1,8 +1,7 @@
-.idea/
-.lock
-compose.yaml
-compose.override.yaml
-
+.idea/*
+/compose.override.yaml
+/compose.yaml
+/.env
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
