@@ -1,13 +1,13 @@
 .idea/*
-/compose.override.yaml
-/compose.yaml
-/.env
-###> symfony/framework-bundle ###
+##> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
+/.env
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
 /vendor/
-###< symfony/framework-bundle ###
+/compose.override.yaml
+/compose.yaml
+##< symfony/framework-bundle ###
