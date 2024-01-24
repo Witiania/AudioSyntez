@@ -7,15 +7,17 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Table(name: 'users')]
 #[ORM\HasLifecycleCallbacks]
-class Users
+#[ORM\Entity]
+class Users implements PasswordAuthenticatedUserInterface, UserInterface
 {
-
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class:UuidGenerator::class)]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'guid', type: Types::GUID)]
     private ?string $id = null;
 
@@ -49,12 +51,13 @@ class Users
     #[ORM\PrePersist]
     public function prePersist()
     {
-        if ($this->createdAt === null){
+        if ($this->createdAt === null) {
             $this->setCreatedAt(new \DateTime());
         }
 
         $this->setUpdatedAt(new \DateTime());
     }
+
     public function getId(): ?string
     {
         return $this->id;
@@ -173,5 +176,20 @@ class Users
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function getRoles(): array
+    {
+        return ["ROLE_ADMIN", "ROLE_USER", "PUBLIC_ACCESS", "COMMON_USER"];
+    }
+
+    public function eraseCredentials(): string
+    {
+        return "database is clear";
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 }
