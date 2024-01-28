@@ -1,7 +1,6 @@
 parameters:
 
 services:
-
   _defaults:
     autowire: true
     autoconfigure: true
@@ -13,4 +12,7 @@ services:
       - '../src/Entity/'
       - '../src/Kernel.php'
 
+  App\Controller\AuthController:
+    bind:
+      $email: '%env(string:MAIL)%'
 
