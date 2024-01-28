@@ -7,51 +7,98 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api', name: 'api_')]
 class AuthController extends AbstractController
 {
-    #[Route('/reset', name: 'reset', methods: ['POST'])]
-    public function reset(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function __construct(
+        private readonly string $email
+    )
+    {}
+
+    #[Route('/send_verify_code', name: 'send_verify_code', methods: ['POST'])]
+    public function sendVerifyCode(MailerInterface $mailer, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        if (empty($data['email'])) {
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 400);
+        }
+
+        $emailUser = $data['email'];
 
         try {
             $userRepository = $entityManager->getRepository(Users::class);
-            $user = $userRepository->findOneBy([
-                'email' => $data['email'],
-                'token' => $data['token'],
-            ]);
+            $user = $userRepository->findOneBy(['email' => $emailUser]);
         } catch (\Exception) {
-            return new JsonResponse([
-                'message' => 'It is impossible connect to the Database',
-            ], 500);
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
         }
 
-        if (null === $user) {
-            return new JsonResponse(['message' => 'email or token do not match'], 401);
+        if ($user === null) {
+            return new JsonResponse("This user exists in the database", 409);
         }
-
-        $user->setPassword($passwordHasher->hashPassword($user, $data['newPassword']));
 
         try {
             $entityManager->persist($user);
-            $entityManager->flush();
         } catch (\Exception) {
-            return new JsonResponse([
-                'message' => 'It is impossible to add a new password for this user to the Database',
-            ], 500);
+            return new JsonResponse("Failed to record user with data token", 500);
         }
 
-        return new JsonResponse(['message' => 'New password added'], 200);
+        $email = (new Email())->from($this->email)
+            ->to($emailUser)
+            ->subject("verify email")
+            ->text($user->getToken());
+
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface) {
+            return new JsonResponse(['message' => 'it is not possible to send a message'], 500);
+        }
+
+        try {
+            $entityManager->flush();
+        } catch (\Exception) {
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
+        }
+
+        return new JsonResponse(['message' => 'the key has been sent by email']);
+    }
+
+    #[Route('/verify_code', name: 'verify_code', methods: ['POST'])]
+    public function verifyCode(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        if (empty($data['email'])) {
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 400);
+        }
+
+        try {
+            $userRepository = $entityManager->getRepository(Users::class);
+            $user = $userRepository->findOneBy(['email' => $data['email'], 'token' => $data['token']]);
+        } catch (\Exception) {
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
+        }
+
+        if ($user !== null) {
+            return new JsonResponse(['message' => 'Verify is access!']);
+        }
+
+        return new JsonResponse(['message' => 'the key does not match', 409]);
     }
 
     #[Route('/register', name: 'register', methods: 'post')]
     public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): JsonResponse
     {
         $postData = json_decode($request->getContent(), true);
+
+        if (empty($data['email'])) {
+            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 400);
+        }
+
         $email = $postData['email'];
 
         try {
@@ -69,7 +116,7 @@ class AuthController extends AbstractController
             ->setName($postData['name'])
             ->setEmail($email)
             ->setPhone($postData['phone'])
-            ->setToken($postData['token']);
+            ->setToken(uniqid());
 
         $user->setPassword($userPasswordHasher->hashPassword($user, $postData['password']));
 
