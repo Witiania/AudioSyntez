@@ -18,8 +18,7 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private readonly string $email
-    )
-    {}
+    ) {}
 
     #[Route('/reset_send', name: 'reset_send', methods: ['POST'])]
     public function resetPasswordToEmail(MailerInterface $mailer, Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
