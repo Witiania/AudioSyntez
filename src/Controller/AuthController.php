@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Users;
+use App\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,10 +19,44 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private readonly string $email
-    ) {}
+    ) {
+    }
+
+    #[Route('/register', name: 'register', methods: 'post')]
+    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): JsonResponse
+    {
+        $postData = json_decode($request->getContent(), true);
+        $userRepository = $entityManager->getRepository(Users::class);
+        $email = $postData['email'];
+
+        if (null !== $userRepository->findOneBy(['email' => $email])) {
+            return new JsonResponse('User already exists', 409);
+        }
+
+        try {
+            $wallet = new Wallet();
+
+            $user = (new Users())
+                ->setName($postData['name'])
+                ->setEmail($email)
+                ->setToken((string) random_int(100000, 999999))
+                ->setPhone($postData['phone'])
+                ->setWallet($wallet);
+
+            $user->setPassword($userPasswordHasher->hashPassword($user, $postData['password']));
+        } catch (\Exception) {
+            return new JsonResponse('Internal server error', 500);
+        }
+
+        $entityManager->persist($user);
+        $entityManager->persist($wallet);
+        $entityManager->flush();
+
+        return new JsonResponse('Success');
+    }
 
     #[Route('/reset_send', name: 'reset_send', methods: ['POST'])]
-    public function resetPasswordToEmail(MailerInterface $mailer, Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function resetPasswordToEmail(MailerInterface $mailer, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $emailUser = $data['email'];
@@ -34,7 +69,7 @@ class AuthController extends AbstractController
         }
 
         if (null === $user) {
-            return new JsonResponse("User with this email not found", 404);
+            return new JsonResponse('User with this email not found', 404);
         }
 
         $token = uniqid();
@@ -45,13 +80,13 @@ class AuthController extends AbstractController
             $entityManager->flush();
         } catch (\Exception) {
             return new JsonResponse([
-                'message' => 'It is impossible to add a new password for this user to the Database'
+                'message' => 'It is impossible to add a new password for this user to the Database',
             ], 500);
         }
 
         $email = (new Email())->from($this->email)
             ->to($emailUser)
-            ->subject("verify email for reset password")
+            ->subject('verify email for reset password')
             ->text($token);
 
         try {
@@ -77,18 +112,18 @@ class AuthController extends AbstractController
         }
 
         if (null === $user) {
-            return new JsonResponse("This user exists in the database", 409);
+            return new JsonResponse('This user exists in the database', 409);
         }
 
         try {
             $entityManager->persist($user);
         } catch (\Exception) {
-            return new JsonResponse("Failed to record user with data token", 500);
+            return new JsonResponse('Failed to record user with data token', 500);
         }
 
         $email = (new Email())->from($this->email)
             ->to($emailUser)
-            ->subject("verify email")
+            ->subject('verify email')
             ->text($user->getToken());
 
         try {
@@ -115,7 +150,7 @@ class AuthController extends AbstractController
             $userRepository = $entityManager->getRepository(Users::class);
             $user = $userRepository->findOneBy([
                 'email' => $data['email'],
-                'token' => $data['token']
+                'token' => $data['token'],
             ]);
         } catch (\Exception) {
             return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
@@ -162,40 +197,4 @@ class AuthController extends AbstractController
 
         return new JsonResponse(['message' => 'New password added'], 200);
     }
-
-    #[Route('/register', name: 'register', methods: 'post')]
-    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): JsonResponse
-    {
-        $postData = json_decode($request->getContent(), true);
-        $email = $postData['email'];
-
-        try {
-            $userRepository = $entityManager->getRepository(Users::class);
-            $user = $userRepository->findOneBy(['email' => $email]);
-        } catch (\Exception) {
-            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
-        }
-
-        if (null !== $user) {
-            return new JsonResponse("this user exists in the database", 409);
-        }
-
-        $user = (new Users())
-            ->setName($postData['name'])
-            ->setEmail($email)
-            ->setPhone($postData['phone'])
-            ->setToken(uniqid());
-
-        $user->setPassword($userPasswordHasher->hashPassword($user, $postData['password']));
-
-        try {
-            $entityManager->persist($user);
-            $entityManager->flush();
-        } catch (\Exception) {
-            return new JsonResponse(['message' => 'It is impossible to add a new user to the Database'], 500);
-        }
-
-        return new JsonResponse("Success");
-    }
 }
-
