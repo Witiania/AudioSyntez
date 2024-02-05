@@ -1,5 +1,4 @@
-.idea/*
-##> symfony/framework-bundle ###
+###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -8,10 +7,17 @@
 /public/bundles/
 /var/
 /vendor/
-/compose.override.yaml
-/compose.yaml
-##< symfony/framework-bundle ###
+###< symfony/framework-bundle ###
 
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
+
+/.idea/
+
+#Ignore docker files
+/compose.override.yaml
+/compose.yaml
+
+#Ignore temp files
+*.tmp

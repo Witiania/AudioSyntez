@@ -3,55 +3,58 @@
 namespace App\Entity;
 
 use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping as ORM;
-
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+#[ORM\Entity]
 #[ORM\Table(name: 'users')]
 #[ORM\HasLifecycleCallbacks]
-#[ORM\Entity]
 class Users implements PasswordAuthenticatedUserInterface, UserInterface
 {
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[ORM\Column(name: 'guid', type: Types::GUID)]
+    #[ORM\Column(name: 'guid', type: Types::GUID, unique: true, nullable: false)]
     private ?string $id = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private string $role = 'COMMON_USER';
+    #[ORM\OneToOne(targetEntity: Wallet::class)]
+    #[ORM\JoinColumn(name: 'wallet', referencedColumnName: 'guid', unique: true, nullable: false)]
+    private Wallet $wallet;
+    #[ORM\Column(length: 255, nullable: false)]
+    private string $role = 'ROLE_USER';
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255, nullable: false)]
     private string $name;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255, nullable: false)]
     private string $password;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255, unique: true, nullable: false)]
     private string $email;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $phone = null;
+    #[ORM\Column(length: 255, unique: true, nullable: false)]
+    private string $phone;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: false)]
     private bool $verified = false;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $token = null;
+    #[ORM\Column(length: 255, nullable: false)]
+    private string $token;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\PrePersist]
-    public function prePersist()
+    public function prePersist(): void
     {
-        if ($this->createdAt === null) {
+        if (null === $this->createdAt) {
             $this->setCreatedAt(new \DateTime());
         }
 
@@ -63,9 +66,21 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function setId(string $id): self
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    public function getWallet(): Wallet
+    {
+        return $this->wallet;
+    }
+
+    public function setWallet(Wallet $wallet): self
+    {
+        $this->wallet = $wallet;
 
         return $this;
     }
@@ -118,7 +133,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getPhone(): ?string
+    public function getPhone(): string
     {
         return $this->phone;
     }
@@ -142,7 +157,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getToken(): ?string
+    public function getToken(): string
     {
         return $this->token;
     }
@@ -154,7 +169,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
     }
@@ -166,9 +181,9 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): \DateTimeInterface
     {
-        return $this->updatedAt;
+        return $this->updatedAt ?? new \DateTime();
     }
 
     public function setUpdatedAt(\DateTimeInterface $updatedAt): self
@@ -180,16 +195,15 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
 
     public function getRoles(): array
     {
-        return ["ROLE_ADMIN", "ROLE_USER", "PUBLIC_ACCESS", "COMMON_USER"];
+        return [$this->role];
     }
 
-    public function eraseCredentials(): string
+    public function eraseCredentials()
     {
-        return "database is clear";
     }
 
     public function getUserIdentifier(): string
     {
-        return $this->email;
+        return $this->id;
     }
 }

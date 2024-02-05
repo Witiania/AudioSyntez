@@ -15,4 +15,3 @@ services:
   App\Controller\AuthController:
     bind:
       $email: '%env(string:MAIL)%'
-
