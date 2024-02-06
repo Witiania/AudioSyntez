@@ -17,9 +17,8 @@ class BalanceController extends AbstractController
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly Security               $security
-    )
-    {
+        private readonly Security $security
+    ) {
         $this->userRepository = $entityManager->getRepository(Users::class);
     }
 
@@ -28,11 +27,24 @@ class BalanceController extends AbstractController
     {
         try {
             $postData = json_decode($request->getContent(), true);
-            $amount = $postData['amount'];
-            $user = $this->userRepository->find($postData['id']);
+            if (!isset($postData['id']) || !isset($postData['amount']) || !is_int($postData['amount'])) {
+                return new JsonResponse('Amount and user is required', 400);
+            }
 
-            if (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount >= 0
-                || (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount < 0 && $this->security->getUser()->getUserIdentifier() !== $user->getId())) {
+            $amount = $postData['amount'];
+
+            /** @var Users|null $user */
+            $user = $this->userRepository->find($postData['id']);
+            if (null === $user) {
+                return new JsonResponse('User not found', 404);
+            }
+
+            $currentUser = $this->security->getUser();
+
+            if ((null === $currentUser) || (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount >= 0)
+                || (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount < 0
+                    && $currentUser->getUserIdentifier() !== $user->getId())
+            ) {
                 return new JsonResponse('Access denied', 401);
             }
 
@@ -50,13 +62,22 @@ class BalanceController extends AbstractController
             return new JsonResponse('Internal server error', 500);
         }
 
-        return new JsonResponse("Success");
+        return new JsonResponse('Success');
     }
 
     #[Route('/balance', name: 'balance', methods: 'get')]
     public function view(): JsonResponse
     {
-        $user = $this->userRepository->find($this->security->getUser()->getUserIdentifier());
+        $currentUser = $this->security->getUser();
+        if (null === $currentUser) {
+            return new JsonResponse('Access denied', 401);
+        }
+
+        /** @var Users|null $user */
+        $user = $this->userRepository->find($currentUser->getUserIdentifier());
+        if (null === $user) {
+            return new JsonResponse('User not found', 404);
+        }
 
         return new JsonResponse($user->getWallet()->getBalance());
     }
