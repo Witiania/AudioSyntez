@@ -148,19 +148,23 @@ class AuthController extends AbstractController
 
         try {
             $userRepository = $entityManager->getRepository(Users::class);
+
             $user = $userRepository->findOneBy([
                 'email' => $data['email'],
                 'token' => $data['token'],
             ]);
         } catch (\Exception) {
-            return new JsonResponse(['message' => 'It is impossible to connect in Database'], 500);
+            return new JsonResponse('It is impossible to connect in Database', 500);
         }
 
-        if (null !== $user) {
-            return new JsonResponse(['message' => 'Verify is access!']);
+        if (null === $user) {
+            return new JsonResponse('The key does not match');
         }
 
-        return new JsonResponse(['message' => 'the key does not match', 403]);
+        $user->setVerified(true);
+        $entityManager->flush();
+
+        return new JsonResponse('Success', 403);
     }
 
     #[Route('/reset', name: 'reset', methods: ['POST'])]
