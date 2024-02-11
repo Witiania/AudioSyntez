@@ -12,6 +12,6 @@ services:
       - '../src/Entity/'
       - '../src/Kernel.php'
 
-  App\Controller\AuthController:
+  App\Services\AuthService:
     bind:
       $email: '%env(string:MAIL)%'
