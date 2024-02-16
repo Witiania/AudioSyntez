@@ -31,32 +31,30 @@ class AuthService
     }
 
     /**
-     * @param array<string> $data
-     *
      * @throws DuplicatedException
      * @throws EmailException
      * @throws \Exception
      */
-    public function register(array $data): void
+    public function register(string $email, string $phone, string $name, string $password): void
     {
-        if (null !== $this->userRepository->findOneBy(['email' => $data['email']])) {
+        if (null !== $this->userRepository->findOneBy(['email' => $email])) {
             throw new DuplicatedException();
         }
 
         $user = (new Users())
-            ->setName($data['name'])
-            ->setEmail($data['email'])
+            ->setName($name)
+            ->setEmail($email)
             ->setToken((string) random_int(100000, 999999))
-            ->setPhone($data['phone'])
+            ->setPhone($phone)
             ->setWallet(new Wallet());
 
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $data['password']));
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));
 
         $this->entityManager->persist($user);
         $this->entityManager->persist($user->getWallet());
         $this->entityManager->flush();
 
-        $this->sendEmail($data['email'], self::VERIFY_EMAIL_SUBJECT, $user->getToken());
+        $this->sendEmail($email, self::VERIFY_EMAIL_SUBJECT, $user->getToken());
     }
 
     /**
@@ -79,21 +77,19 @@ class AuthService
 
     /**
      * @throws UserNotFoundException
-     * @throws EmailException
      * @throws \Exception
+     * @throws EmailException
      */
     public function sendResetCode(string $email): void
     {
         /** @var Users|null $user */
         $user = $this->userRepository->findOneBy(['email' => $email]);
-
         if (null === $user) {
             throw new UserNotFoundException();
         }
 
         $user->setToken((string) random_int(100000, 999999));
 
-        $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         $this->sendEmail($email, self::RESET_CODE_SUBJECT, $user->getToken());
@@ -116,7 +112,6 @@ class AuthService
 
         $user->setPassword($this->userPasswordHasher->hashPassword($user, $newPassword));
 
-        $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
 

@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\DTO\RegistrationRequestDTO;
+use App\DTO\ResetRequestDTO;
+use App\DTO\SendResetRequestDTO;
+use App\DTO\VerifyRequestDTO;
 use App\Exceptions\DuplicatedException;
 use App\Exceptions\EmailException;
 use App\Exceptions\UserNotFoundException;
@@ -9,7 +13,6 @@ use App\Services\AuthService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api', name: 'api_')]
@@ -22,20 +25,19 @@ class AuthController extends AbstractController
     }
 
     #[Route('/register', name: 'register', methods: 'POST')]
-    public function register(Request $request): JsonResponse
+    public function register(RegistrationRequestDTO $requestDTO): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (empty($data['email']) || empty($data['name']) || empty($data['phone']) || empty($data['password'])) {
-            return new JsonResponse('Bad request', 400);
-        }
-
         try {
-            $this->authService->register($data);
+            $this->authService->register(
+                $requestDTO->getEmail(),
+                $requestDTO->getPhone(),
+                $requestDTO->getName(),
+                $requestDTO->getPassword(),
+            );
         } catch (EmailException $e) {
             $this->logger->error($e);
 
-            return new JsonResponse($e->getMessage(). 500);
+            return new JsonResponse($e->getMessage(), 500);
         } catch (DuplicatedException $e) {
             return new JsonResponse($e->getMessage(), 404);
         } catch (\Throwable $e) {
@@ -48,20 +50,14 @@ class AuthController extends AbstractController
     }
 
     #[Route('/send_for_reset', name: 'send_for_reset', methods: 'POST')]
-    public function sendResetCode(Request $request): JsonResponse
+    public function sendResetCode(SendResetRequestDTO $requestDTO): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (empty($data['email'])) {
-            return new JsonResponse('Bad request', 400);
-        }
-
         try {
-            $this->authService->sendResetCode($data['email']);
+            $this->authService->sendResetCode($requestDTO->getEmail());
         } catch (EmailException $e) {
             $this->logger->error($e);
 
-            return new JsonResponse($e->getMessage(). 500);
+            return new JsonResponse($e->getMessage(), 500);
         } catch (UserNotFoundException $e) {
             return new JsonResponse($e->getMessage(), 404);
         } catch (\Throwable $e) {
@@ -74,16 +70,14 @@ class AuthController extends AbstractController
     }
 
     #[Route('/reset', name: 'reset', methods: 'POST')]
-    public function reset(Request $request): JsonResponse
+    public function reset(ResetRequestDTO $requestDTO): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (empty($data['email']) || empty($data['token']) || empty($data['newPassword'])) {
-            return new JsonResponse('Bad request', 400);
-        }
-
         try {
-            $this->authService->resetPassword($data['email'], $data['token'], $data['newPassword']);
+            $this->authService->resetPassword(
+                $requestDTO->getEmail(),
+                $requestDTO->getToken(),
+                $requestDTO->getNewPassword()
+            );
         } catch (UserNotFoundException $e) {
             return new JsonResponse($e->getMessage(), 404);
         } catch (\Throwable) {
@@ -94,16 +88,10 @@ class AuthController extends AbstractController
     }
 
     #[Route('/verify', name: 'verify', methods: 'POST')]
-    public function verify(Request $request): JsonResponse
+    public function verify(VerifyRequestDTO $requestDTO): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (empty($data['email']) || empty($data['token'])) {
-            return new JsonResponse('Bad request', 400);
-        }
-
         try {
-            $this->authService->verify($data['email'], $data['token']);
+            $this->authService->verify($requestDTO->getEmail(), $requestDTO->getToken());
         } catch (UserNotFoundException $e) {
             return new JsonResponse($e->getMessage(), 404);
         }

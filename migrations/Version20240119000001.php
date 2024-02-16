@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20240119142548 extends AbstractMigration
+final class Version20240119000001 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -16,10 +16,10 @@ final class Version20240119142548 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql(sql: "CREATE TABLE users 
+        $this->addSql(sql: 'CREATE TABLE users
                             (
                                 guid uuid NOT NULL DEFAULT uuid_generate_v4(),
-                                role VARCHAR NOT NULL, 
+                                role VARCHAR NOT NULL,
                                 name VARCHAR NOT NULL,
                                 password VARCHAR NOT NULL,
                                 email VARCHAR NOT NULL UNIQUE,
@@ -29,7 +29,7 @@ final class Version20240119142548 extends AbstractMigration
                                 created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
                                 updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
                                 PRIMARY KEY(guid)
-                            )"
+                            )'
         );
     }
 
