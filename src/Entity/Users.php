@@ -45,19 +45,21 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\Column(length: 255, nullable: false)]
     private string $token;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\PrePersist]
     public function prePersist(): void
     {
-        if (null === $this->createdAt) {
-            $this->setCreatedAt(new \DateTime());
-        }
+        $this->setCreatedAt(new \DateTime());
+    }
 
+    #[ORM\PreFlush]
+    public function preFlush(): void
+    {
         $this->setUpdatedAt(new \DateTime());
     }
 
