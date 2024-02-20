@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Exceptions;
+namespace App\Exception;
 
-class DuplicatedException extends \Exception
+class DuplicateException extends \Exception
 {
     public function __construct(string $message = 'User already exists', int $code = 0, ?\Throwable $previous = null)
     {

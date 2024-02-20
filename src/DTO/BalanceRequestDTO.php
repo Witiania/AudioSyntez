@@ -14,6 +14,7 @@ final class BalanceRequestDTO implements DTOResolverInterface
 
     #[Assert\NotBlank]
     #[Assert\Type('integer')]
+    #[Assert\NotIdenticalTo(value: 0)]
     private int $amount;
 
     public function getId(): string

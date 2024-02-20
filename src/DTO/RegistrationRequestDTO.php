@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\PasswordStrength;
 
 final class RegistrationRequestDTO implements DTOResolverInterface
 {
@@ -16,12 +17,12 @@ final class RegistrationRequestDTO implements DTOResolverInterface
     #[Assert\Type('string')]
     private string $name;
 
-    #[Assert\PasswordStrength]
-    #[Assert\Length(min: 5)]
+    #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
     private string $password;
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
+    #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/')]
     private string $phone;
 
     public function setEmail(string $email): self

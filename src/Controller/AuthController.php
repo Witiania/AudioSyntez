@@ -6,10 +6,10 @@ use App\DTO\RegistrationRequestDTO;
 use App\DTO\ResetRequestDTO;
 use App\DTO\SendResetRequestDTO;
 use App\DTO\VerifyRequestDTO;
-use App\Exceptions\DuplicatedException;
-use App\Exceptions\EmailException;
-use App\Exceptions\UserNotFoundException;
-use App\Services\AuthService;
+use App\Exception\DuplicateException;
+use App\Exception\EmailTransactionException;
+use App\Exception\UserNotFoundException;
+use App\Service\AuthService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,11 +34,11 @@ class AuthController extends AbstractController
                 $requestDTO->getName(),
                 $requestDTO->getPassword(),
             );
-        } catch (EmailException $e) {
+        } catch (EmailTransactionException $e) {
             $this->logger->error($e);
 
             return new JsonResponse($e->getMessage(), 500);
-        } catch (DuplicatedException $e) {
+        } catch (DuplicateException $e) {
             return new JsonResponse($e->getMessage(), 404);
         } catch (\Throwable $e) {
             $this->logger->critical($e);
@@ -54,7 +54,7 @@ class AuthController extends AbstractController
     {
         try {
             $this->authService->sendResetCode($requestDTO->getEmail());
-        } catch (EmailException $e) {
+        } catch (EmailTransactionException $e) {
             $this->logger->error($e);
 
             return new JsonResponse($e->getMessage(), 500);
@@ -76,7 +76,7 @@ class AuthController extends AbstractController
             $this->authService->resetPassword(
                 $requestDTO->getEmail(),
                 $requestDTO->getToken(),
-                $requestDTO->getNewPassword()
+                $requestDTO->getPassword()
             );
         } catch (UserNotFoundException $e) {
             return new JsonResponse($e->getMessage(), 404);
