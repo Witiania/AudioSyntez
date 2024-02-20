@@ -3,10 +3,10 @@
 namespace App\Controller;
 
 use App\DTO\BalanceRequestDTO;
-use App\Exceptions\BalanceErrorException;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\UserNotFoundException;
-use App\Services\BalanceService;
+use App\Exception\BalanceTransactionException;
+use App\Exception\IllegalAccessException;
+use App\Exception\UserNotFoundException;
+use App\Service\BalanceService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,7 +25,7 @@ class BalanceController extends AbstractController
     {
         try {
             $this->balanceService->replenish($requestDTO->getAmount(), $requestDTO->getId());
-        } catch (BalanceErrorException|ForbiddenException $e) {
+        } catch (BalanceTransactionException|IllegalAccessException $e) {
             $this->logger->error($e);
 
             return new JsonResponse($e->getMessage(), 403);

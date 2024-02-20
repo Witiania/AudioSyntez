@@ -5,3 +5,6 @@ cs-fixer:
 
 stan:
 	./vendor/bin/phpstan analyse
+
+test:
+	./vendor/bin/phpunit

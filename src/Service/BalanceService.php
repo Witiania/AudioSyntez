@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Services;
+namespace App\Service;
 
 use App\Entity\Users;
-use App\Exceptions\BalanceErrorException;
-use App\Exceptions\ForbiddenException;
-use App\Exceptions\UserNotFoundException;
+use App\Exception\BalanceTransactionException;
+use App\Exception\IllegalAccessException;
+use App\Exception\UserNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class BalanceService
 {
@@ -23,8 +24,8 @@ class BalanceService
 
     /**
      * @throws UserNotFoundException
-     * @throws ForbiddenException
-     * @throws BalanceErrorException
+     * @throws IllegalAccessException
+     * @throws BalanceTransactionException
      */
     public function replenish(int $amount, string $id): void
     {
@@ -34,19 +35,20 @@ class BalanceService
             throw new UserNotFoundException();
         }
 
+        /** @var UserInterface $currentUser */
         $currentUser = $this->security->getUser();
 
-        if ((null === $currentUser) || (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount >= 0)
-            || (!$this->security->isGranted(Users::ROLE_ADMIN) && $amount < 0
+        if ((!$this->security->isGranted(Users::ROLE_ADMIN) && $amount > 0)
+            || (!$this->security->isGranted(Users::ROLE_ADMIN)
                 && $currentUser->getUserIdentifier() !== $user->getId())
         ) {
-            throw new ForbiddenException();
+            throw new IllegalAccessException();
         }
 
         $wallet = $user->getWallet();
 
         if ($wallet->getBalance() < abs($amount) && $amount < 0) {
-            throw new BalanceErrorException();
+            throw new BalanceTransactionException();
         }
 
         $wallet->setBalance($wallet->getBalance() + $amount);

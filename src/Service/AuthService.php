@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Service;
 
 use App\Entity\Users;
 use App\Entity\Wallet;
-use App\Exceptions\DuplicatedException;
-use App\Exceptions\EmailException;
-use App\Exceptions\UserNotFoundException;
+use App\Exception\DuplicateException;
+use App\Exception\EmailTransactionException;
+use App\Exception\UserNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -31,14 +31,14 @@ class AuthService
     }
 
     /**
-     * @throws DuplicatedException
-     * @throws EmailException
+     * @throws DuplicateException
+     * @throws EmailTransactionException
      * @throws \Exception
      */
     public function register(string $email, string $phone, string $name, string $password): void
     {
         if (null !== $this->userRepository->findOneBy(['email' => $email])) {
-            throw new DuplicatedException();
+            throw new DuplicateException();
         }
 
         $user = (new Users())
@@ -58,7 +58,7 @@ class AuthService
     }
 
     /**
-     * @throws EmailException
+     * @throws EmailTransactionException
      */
     public function sendEmail(string $email, string $subject, string $token): void
     {
@@ -71,14 +71,14 @@ class AuthService
 
             $this->mailer->send($email);
         } catch (TransportExceptionInterface) {
-            throw new EmailException();
+            throw new EmailTransactionException();
         }
     }
 
     /**
      * @throws UserNotFoundException
      * @throws \Exception
-     * @throws EmailException
+     * @throws EmailTransactionException
      */
     public function sendResetCode(string $email): void
     {
@@ -98,7 +98,7 @@ class AuthService
     /**
      * @throws UserNotFoundException
      */
-    public function resetPassword(string $email, string $token, string $newPassword): void
+    public function resetPassword(string $email, string $token, string $password): void
     {
         /** @var Users|null $user */
         $user = $this->userRepository->findOneBy([
@@ -110,7 +110,7 @@ class AuthService
             throw new UserNotFoundException();
         }
 
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $newPassword));
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));
 
         $this->entityManager->flush();
     }

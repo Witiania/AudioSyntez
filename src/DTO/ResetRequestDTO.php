@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\PasswordStrength;
 
 final class ResetRequestDTO implements DTOResolverInterface
 {
@@ -12,9 +13,8 @@ final class ResetRequestDTO implements DTOResolverInterface
     #[Assert\Email]
     private string $email;
 
-    #[Assert\PasswordStrength]
-    #[Assert\Length(min: 5)]
-    private string $newPassword;
+    #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
+    private string $password;
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
@@ -32,16 +32,16 @@ final class ResetRequestDTO implements DTOResolverInterface
         return $this->email;
     }
 
-    public function setNewPassword(string $newPassword): self
+    public function setPassword(string $password): self
     {
-        $this->newPassword = $newPassword;
+        $this->password = $password;
 
         return $this;
     }
 
-    public function getNewPassword(): string
+    public function getPassword(): string
     {
-        return $this->newPassword;
+        return $this->password;
     }
 
     public function setToken(string $token): self
