@@ -14,6 +14,7 @@ final class VerifyRequestDTO implements DTOResolverInterface
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
+    #[Assert\Length(exactly: 6)]
     private string $token;
 
     public function setEmail(string $email): self

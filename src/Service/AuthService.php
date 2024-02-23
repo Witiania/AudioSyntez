@@ -25,7 +25,7 @@ class AuthService
         private readonly MailerInterface $mailer,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $userPasswordHasher,
-        private readonly string $email,
+        private readonly string $email
     ) {
         $this->userRepository = $this->entityManager->getRepository(Users::class);
     }

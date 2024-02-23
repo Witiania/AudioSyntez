@@ -153,7 +153,7 @@ class BalanceServiceTest extends TestCase
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $mockBalanceService->replenish($this->user->getId(), 0);
+        $mockBalanceService->replenish(0, $this->user->getId());
     }
 
     /**
@@ -173,7 +173,7 @@ class BalanceServiceTest extends TestCase
             ->willReturn($this->user);
 
         self::expectException(IllegalAccessException::class);
-        $mockBalanceService->replenish($this->user->getId(), 1);
+        $mockBalanceService->replenish(1, $this->user->getId());
     }
 
     /**
@@ -195,7 +195,7 @@ class BalanceServiceTest extends TestCase
 
         $this->wallet->setBalance(-1);
 
-        self::expectException(IllegalAccessException::class);
-        $mockBalanceService->replenish($this->user->getId(), -1);
+        self::expectException(BalanceTransactionException::class);
+        $mockBalanceService->replenish(-1, $this->user->getId());
     }
 }

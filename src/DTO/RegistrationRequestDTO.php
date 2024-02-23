@@ -15,8 +15,10 @@ final class RegistrationRequestDTO implements DTOResolverInterface
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
+    #[Assert\Length(min: 3, max: 20)]
     private string $name;
 
+    #[Assert\NotCompromisedPassword]
     #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
     private string $password;
 
@@ -24,6 +26,14 @@ final class RegistrationRequestDTO implements DTOResolverInterface
     #[Assert\Type('string')]
     #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/')]
     private string $phone;
+
+    #[Assert\IsTrue(
+        message: 'The password cannot match your first name.'
+    )]
+    public function isPasswordSafe(): bool
+    {
+        return $this->password !== $this->name;
+    }
 
     public function setEmail(string $email): self
     {

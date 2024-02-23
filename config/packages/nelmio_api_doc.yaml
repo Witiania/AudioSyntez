@@ -1,0 +1,44 @@
+nelmio_api_doc:
+    documentation:
+        paths:
+            /login:
+                post:
+                    security: []
+                    tags:
+                        - Authentication
+                    operationId: postLogin
+                    requestBody:
+                        description: User credentials
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        email:
+                                            type: string
+                                            example: example@example.example
+                                        password:
+                                            type: string
+                                            example: example
+                    responses:
+                        '200':
+                            description: Successful login
+                        '401':
+                            description: Invalid credentials
+        info:
+            title: Audio-Syntez
+            description: Symfony application.
+            version: 1.0.0
+        components:
+            securitySchemes:
+                bearerAuth:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+        security:
+            - bearerAuth: [ ]
+    use_validation_groups: true
+    areas:
+        default:
+            path_patterns: [ api ]

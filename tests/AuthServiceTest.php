@@ -20,7 +20,6 @@ class AuthServiceTest extends TestCase
 {
     private MockObject|EntityManagerInterface $mockEntityManager;
     private MockObject|EntityRepository $mockUserRepository;
-    private MockObject|UserPasswordHasherInterface $mockPasswordHasher;
     private MockObject|MailerInterface $mockMailerInterface;
     private Users $user;
     private AuthService $authService;
@@ -33,7 +32,7 @@ class AuthServiceTest extends TestCase
         $this->mockEntityManager = $this->createMock(EntityManagerInterface::class);
         $this->mockUserRepository = $this->createMock(EntityRepository::class);
         $this->mockMailerInterface = $this->createMock(MailerInterface::class);
-        $this->mockPasswordHasher = $this->createMock(UserPasswordHasherInterface::class);
+        $mockPasswordHasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->user = new Users();
 
         $this->mockEntityManager
@@ -44,32 +43,9 @@ class AuthServiceTest extends TestCase
         $this->authService = new AuthService(
             $this->mockMailerInterface,
             $this->mockEntityManager,
-            $this->mockPasswordHasher,
-            '123@123.123');
-    }
-
-    /**
-     * @throws EmailTransactionException
-     * @throws Exception
-     */
-    public function testRegisterDuplicatedException()
-    {
-        $this->mockUserRepository
-            ->method('findOneBy')
-            ->willReturn($this->user);
-
-        self::expectException(DuplicateException::class);
-        $this->authService->register('123@123.123', '123123123', 'alex', '321123123');
-    }
-
-    public function testRegisterEmailException()
-    {
-        $this->mockMailerInterface
-            ->method('send')
-            ->willThrowException(new TransportException());
-
-        self::expectException(EmailTransactionException::class);
-        $this->authService->sendEmail('123@123.123', 'test', 'test');
+            $mockPasswordHasher,
+            'test@test.test'
+        );
     }
 
     /**
@@ -91,7 +67,31 @@ class AuthServiceTest extends TestCase
             ->expects($this->once())
             ->method('send');
 
-        $this->authService->register('123@123.123', '123123123', 'alex', '321123123');
+        $this->authService->register('test@test.test', 'test', 'test', 'test');
+    }
+
+    /**
+     * @throws EmailTransactionException
+     * @throws Exception
+     */
+    public function testRegisterDuplicateException(): void
+    {
+        $this->mockUserRepository
+            ->method('findOneBy')
+            ->willReturn($this->user);
+
+        self::expectException(DuplicateException::class);
+        $this->authService->register('test@test.test', 'test', 'test', 'test');
+    }
+
+    public function testRegisterEmailTransactionException(): void
+    {
+        $this->mockMailerInterface
+            ->method('send')
+            ->willThrowException(new TransportException());
+
+        self::expectException(EmailTransactionException::class);
+        $this->authService->sendEmail('test@test.test', 'test', 'test');
     }
 
     /**
@@ -106,10 +106,11 @@ class AuthServiceTest extends TestCase
         $this->authService->sendEmail('test@test.test', 'test', 'test');
     }
 
-    public function testSendEmailEmailException(): void
+    public function testSendEmailEmailTransactionException(): void
     {
         $this->mockMailerInterface
-            ->method('send')->willThrowException(new TransportException());
+            ->method('send')
+            ->willThrowException(new TransportException());
 
         self::expectException(EmailTransactionException::class);
         $this->authService->sendEmail('test@test.test', 'test', 'test');
@@ -118,90 +119,127 @@ class AuthServiceTest extends TestCase
     /**
      * @throws Exception
      * @throws EmailTransactionException
+     * @throws UserNotFoundException
      */
-    public function testSendResetCodeUserNotFoundException()
+    public function testSendResetCodeSuccess(): void
     {
         $this->mockUserRepository
             ->method('findOneBy')
-            ->willReturn(null);
+            ->willReturn($this->user);
 
-        self::expectException(UserNotFoundException::class);
-        $this->authService->sendResetCode('123@123.123');
+        $this->mockUserRepository
+            ->expects(self::once())
+            ->method('findOneBy')
+            ->willReturn($this->user);
+
+        $this->mockEntityManager
+            ->expects(self::once())
+            ->method('flush');
+
+        $this->mockMailerInterface
+            ->expects(self::once())
+            ->method('send');
+
+        $this->authService->sendResetCode('test@test.test');
     }
 
     /**
      * @throws Exception
      * @throws EmailTransactionException
-     * @throws UserNotFoundException
      */
-    public function testSendResetCodeSuccess()
-    {
-        $this->mockUserRepository
-            ->method('findOneBy')
-            ->willReturn($this->user);
-
-        $this->mockUserRepository->expects(self::once())->method('findOneBy')->willReturn($this->user);
-        $this->mockEntityManager->expects(self::once())->method('flush');
-        $this->mockMailerInterface->expects(self::once())->method('send');
-
-        $this->authService->sendResetCode('123@123.123');
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testResetPasswordUserNotFoundException()
+    public function testSendResetCodeUserNotFoundException(): void
     {
         $this->mockUserRepository
             ->method('findOneBy')
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $this->authService->resetPassword('123@123.123', '123123', '123123');
+        $this->authService->sendResetCode('test@test.test');
+    }
+
+    /**
+     * @throws UserNotFoundException
+     */
+    public function testSendResetCodeEmailTransactionException(): void
+    {
+        $this->mockUserRepository
+            ->method('findOneBy')
+            ->willReturn($this->user);
+
+        $this->mockMailerInterface
+            ->method('send')->willThrowException(new TransportException());
+
+        self::expectException(EmailTransactionException::class);
+        $this->authService->sendResetCode('test@test.test');
     }
 
     /**
      * @throws UserNotFoundException
      * @throws Exception
      */
-    public function testResetPasswordSuccess()
+    public function testResetPasswordSuccess(): void
     {
         $this->mockUserRepository
             ->method('findOneBy')
             ->willReturn($this->user);
 
-        $this->mockUserRepository->expects(self::once())->method('findOneBy')->willReturn($this->user);
-        $this->mockEntityManager->expects(self::once())->method('flush');
+        $this->mockUserRepository
+            ->expects(self::once())
+            ->method('findOneBy')
+            ->willReturn($this->user);
 
-        $this->authService->resetPassword('123@123.123', '123123', '123123');
+        $this->mockEntityManager
+            ->expects(self::once())
+            ->method('flush');
+
+        $this->authService->resetPassword('test@test.test', 'test', 'test');
     }
 
     /**
      * @throws Exception
      */
-    public function testVerifyUserNotFoundException()
+    public function testResetPasswordUserNotFoundException(): void
     {
         $this->mockUserRepository
             ->method('findOneBy')
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $this->authService->verify('123@123.123', '123123');
+        $this->authService->resetPassword('test@test.test', 'test', 'test');
     }
 
     /**
      * @throws UserNotFoundException
      * @throws Exception
      */
-    public function testVerifySuccess()
+    public function testVerifySuccess(): void
     {
         $this->mockUserRepository
             ->method('findOneBy')
             ->willReturn($this->user);
 
-        $this->mockUserRepository->expects(self::once())->method('findOneBy')->willReturn($this->user);
-        $this->mockEntityManager->expects(self::once())->method('flush');
+        $this->mockUserRepository
+            ->expects(self::once())
+            ->method('findOneBy')
+            ->willReturn($this->user);
 
-        $this->authService->verify('123@123.123', '123123');
+        $this->mockEntityManager
+            ->expects(self::once())
+            ->method('flush');
+
+        $this->authService->verify('test@test.test', 'test');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testVerifyUserNotFoundException(): void
+    {
+        $this->mockUserRepository
+            ->method('findOneBy')
+            ->willReturn(null);
+
+        self::expectException(UserNotFoundException::class);
+        $this->authService->verify('test@test.test', 'test');
     }
 }

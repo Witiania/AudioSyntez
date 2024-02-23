@@ -9,23 +9,6 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
-###< lexik/jwt-authentication-bundle ###
-
-/.idea/
-
-#Ignore docker files
-/compose.override.yaml
-/compose.yaml
-
-#Ignore temp files
-*.tmp
-
-###> phpstan/phpstan ###
-phpstan.neon
-###< phpstan/phpstan ###
-
 ###> friendsofphp/php-cs-fixer ###
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
@@ -35,3 +18,20 @@ phpstan.neon
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
+/.idea/
+
+#Ignore docker files
+/compose.override.yaml
+/compose.yaml
+
+#Ignore temp files
+*.tmp
