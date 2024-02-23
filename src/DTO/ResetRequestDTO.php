@@ -13,11 +13,13 @@ final class ResetRequestDTO implements DTOResolverInterface
     #[Assert\Email]
     private string $email;
 
+    #[Assert\NotCompromisedPassword]
     #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
     private string $password;
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
+    #[Assert\Length(exactly: 6)]
     private string $token;
 
     public function setEmail(string $email): self

@@ -1,5 +1,3 @@
-parameters:
-
 services:
   _defaults:
     autowire: true
@@ -12,6 +10,6 @@ services:
       - '../src/Entity/'
       - '../src/Kernel.php'
 
-  App\Services\AuthService:
+  App\Service\AuthService:
     bind:
       $email: '%env(string:MAIL)%'
