@@ -8,3 +8,6 @@ stan:
 
 test:
 	./vendor/bin/phpunit
+
+doc:
+	php bin/console nelmio:apidoc:dump --format=html
