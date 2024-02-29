@@ -46,15 +46,21 @@ class BalanceController extends AbstractController
         response: 403,
         description: 'Insufficient funds/Permission denied'
     )]
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function balanceReplenish(BalanceRequestDTO $requestDTO): JsonResponse
     {
         try {
             $this->balanceService->replenish($requestDTO->getAmount(), $requestDTO->getId());
         } catch (BalanceTransactionException|IllegalAccessException $e) {
-            $this->logger->error($e);
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
             return new JsonResponse($e->getMessage(), 403);
         } catch (UserNotFoundException $e) {
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+
             return new JsonResponse($e->getMessage(), 404);
         }
 
@@ -69,6 +75,8 @@ class BalanceController extends AbstractController
         try {
             return new JsonResponse($this->balanceService->view());
         } catch (UserNotFoundException $e) {
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+
             return new JsonResponse($e->getMessage(), 404);
         }
     }

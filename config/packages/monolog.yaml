@@ -1,0 +1,11 @@
+monolog:
+  channels:
+    - deprecation
+
+  handlers:
+    main:
+      type: stream
+      path: php://stdout
+      level: info
+      channels: [ "!event" ]
+
