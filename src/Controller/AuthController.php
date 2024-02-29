@@ -6,7 +6,6 @@ use App\DTO\RegistrationRequestDTO;
 use App\DTO\ResetRequestDTO;
 use App\DTO\SendResetRequestDTO;
 use App\DTO\VerifyRequestDTO;
-use App\Exception\DuplicateException;
 use App\Exception\EmailTransactionException;
 use App\Exception\UserNotFoundException;
 use App\Service\AuthService;
@@ -50,6 +49,10 @@ class AuthController extends AbstractController
         response: 409,
         description: 'User already exists'
     )]
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function register(RegistrationRequestDTO $requestDTO): JsonResponse
     {
         try {
@@ -60,15 +63,9 @@ class AuthController extends AbstractController
                 $requestDTO->getPassword()
             );
         } catch (EmailTransactionException $e) {
-            $this->logger->error($e);
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
             return new JsonResponse($e->getMessage(), 500);
-        } catch (DuplicateException $e) {
-            return new JsonResponse($e->getMessage(), 409);
-        } catch (\Throwable $e) {
-            $this->logger->critical($e);
-
-            return new JsonResponse('Internal server error', 500);
         }
 
         return new JsonResponse('Register success');
@@ -97,20 +94,22 @@ class AuthController extends AbstractController
         response: 404,
         description: 'User not found'
     )]
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function sendResetCode(SendResetRequestDTO $requestDTO): JsonResponse
     {
         try {
             $this->authService->sendResetCode($requestDTO->getEmail());
         } catch (EmailTransactionException $e) {
-            $this->logger->error($e);
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
             return new JsonResponse($e->getMessage(), 500);
         } catch (UserNotFoundException $e) {
-            return new JsonResponse($e->getMessage(), 404);
-        } catch (\Throwable $e) {
-            $this->logger->critical($e);
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse('Internal server error', 500);
+            return new JsonResponse($e->getMessage(), 404);
         }
 
         return new JsonResponse('The key has been sent by email');
@@ -139,6 +138,10 @@ class AuthController extends AbstractController
         response: 404,
         description: 'User not found'
     )]
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function reset(ResetRequestDTO $requestDTO): JsonResponse
     {
         try {
@@ -148,9 +151,9 @@ class AuthController extends AbstractController
                 $requestDTO->getPassword()
             );
         } catch (UserNotFoundException $e) {
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+
             return new JsonResponse($e->getMessage(), 404);
-        } catch (\Throwable) {
-            return new JsonResponse('Internal server error', 500);
         }
 
         return new JsonResponse('New password added');
@@ -175,11 +178,17 @@ class AuthController extends AbstractController
         response: 404,
         description: 'User not found'
     )]
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function verify(VerifyRequestDTO $requestDTO): JsonResponse
     {
         try {
             $this->authService->verify($requestDTO->getEmail(), $requestDTO->getToken());
         } catch (UserNotFoundException $e) {
+            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+
             return new JsonResponse($e->getMessage(), 404);
         }
 

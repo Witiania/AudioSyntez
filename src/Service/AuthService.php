@@ -33,7 +33,6 @@ class AuthService
     /**
      * @throws DuplicateException
      * @throws EmailTransactionException
-     * @throws \Exception
      */
     public function register(string $email, string $phone, string $name, string $password): void
     {
@@ -68,7 +67,6 @@ class AuthService
                 ->to($email)
                 ->subject($subject)
                 ->text($token);
-
             $this->mailer->send($email);
         } catch (TransportExceptionInterface) {
             throw new EmailTransactionException();

@@ -24,7 +24,7 @@ final class RegistrationRequestDTO implements DTOResolverInterface
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
-    #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/')]
+    #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/', message: 'The phone number is not valid.')]
     private string $phone;
 
     #[Assert\IsTrue(
