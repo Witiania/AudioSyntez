@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
 use App\DTO\RegistrationRequestDTO;
 use App\DTO\ResetRequestDTO;
@@ -65,10 +65,10 @@ class AuthController extends AbstractController
         } catch (EmailTransactionException $e) {
             $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse($e->getMessage(), 500);
+            return new JsonResponse(['message' => $e->getMessage()], 500);
         }
 
-        return new JsonResponse('Register success');
+        return new JsonResponse(['message' => 'Register success']);
     }
 
     #[Route('/send_for_reset', name: 'send_for_reset', methods: 'POST')]
@@ -105,14 +105,14 @@ class AuthController extends AbstractController
         } catch (EmailTransactionException $e) {
             $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse($e->getMessage(), 500);
+            return new JsonResponse(['message' => $e->getMessage()], 500);
         } catch (UserNotFoundException $e) {
             $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse($e->getMessage(), 404);
+            return new JsonResponse(['message' => $e->getMessage()], 404);
         }
 
-        return new JsonResponse('The key has been sent by email');
+        return new JsonResponse(['message' => 'The key has been sent by email']);
     }
 
     #[Route('/reset', name: 'reset', methods: 'POST')]
@@ -153,10 +153,10 @@ class AuthController extends AbstractController
         } catch (UserNotFoundException $e) {
             $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse($e->getMessage(), 404);
+            return new JsonResponse(['message' => $e->getMessage()], 404);
         }
 
-        return new JsonResponse('New password added');
+        return new JsonResponse(['message' => 'New password added']);
     }
 
     #[Route('/verify', name: 'verify', methods: 'POST')]
@@ -189,9 +189,9 @@ class AuthController extends AbstractController
         } catch (UserNotFoundException $e) {
             $this->logger->warning($e->getMessage(), ['exception' => $e]);
 
-            return new JsonResponse($e->getMessage(), 404);
+            return new JsonResponse(['message' => $e->getMessage()], 404);
         }
 
-        return new JsonResponse('Success');
+        return new JsonResponse(['message' => 'Success']);
     }
 }

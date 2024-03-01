@@ -10,21 +10,21 @@ use Symfony\Component\Validator\Constraints\PasswordStrength;
 final class RegistrationRequestDTO implements DTOResolverInterface
 {
     #[Assert\NotBlank]
-    #[Assert\Email]
+    #[Assert\Email(message: 'Wrong email')]
     private string $email;
 
     #[Assert\NotBlank]
-    #[Assert\Type('string')]
+    #[Assert\Type(type: 'string', message: 'Wrong name')]
     #[Assert\Length(min: 3, max: 20)]
     private string $name;
 
-    #[Assert\NotCompromisedPassword]
+    #[Assert\NotCompromisedPassword(message: 'Wrong password')]
     #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
     private string $password;
 
     #[Assert\NotBlank]
     #[Assert\Type('string')]
-    #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/', message: 'The phone number is not valid.')]
+    #[Assert\Regex('/\+?[1-9][0-9]{3}[0-9]{7}/', message: 'Wrong phone')]
     private string $phone;
 
     #[Assert\IsTrue(
