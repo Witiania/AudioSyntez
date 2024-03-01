@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+    <script src="{{ asset('js/reset_code.js') }}"></script>
+{% endblock %}
+
+
+{% block head %}
+    <title>Reset code</title>
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+    <div class="container d-flex justify-content-center align-items-center" style="height:  100vh;">
+        <div class="col-6">
+            <h1>Reset code</h1>
+            <form id="reset-code-form">
+                <div class="form-group">
+                    <label for="email">Enter your email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
