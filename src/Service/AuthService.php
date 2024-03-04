@@ -33,6 +33,7 @@ class AuthService
     /**
      * @throws DuplicateException
      * @throws EmailTransactionException
+     * @throws \Exception
      */
     public function register(string $email, string $phone, string $name, string $password): void
     {
@@ -40,10 +41,12 @@ class AuthService
             throw new DuplicateException();
         }
 
+        $token = (string) random_int(100000, 999999);
+
         $user = (new Users())
             ->setName($name)
             ->setEmail($email)
-            ->setToken((string) random_int(100000, 999999))
+            ->setToken($token)
             ->setPhone($phone)
             ->setWallet(new Wallet());
 
@@ -53,7 +56,7 @@ class AuthService
         $this->entityManager->persist($user->getWallet());
         $this->entityManager->flush();
 
-        $this->sendEmail($email, self::VERIFY_EMAIL_SUBJECT, $user->getToken());
+        $this->sendEmail($email, self::VERIFY_EMAIL_SUBJECT, $token);
     }
 
     /**
@@ -86,15 +89,18 @@ class AuthService
             throw new UserNotFoundException();
         }
 
-        $user->setToken((string) random_int(100000, 999999));
+        $token = (string) random_int(100000, 999999);
+
+        $user->setToken($token);
 
         $this->entityManager->flush();
 
-        $this->sendEmail($email, self::RESET_CODE_SUBJECT, $user->getToken());
+        $this->sendEmail($email, self::RESET_CODE_SUBJECT, $token);
     }
 
     /**
      * @throws UserNotFoundException
+     * @throws \Exception
      */
     public function resetPassword(string $email, string $token, string $password): void
     {
@@ -108,13 +114,16 @@ class AuthService
             throw new UserNotFoundException();
         }
 
-        $user->setPassword($this->userPasswordHasher->hashPassword($user, $password));
+        $user
+            ->setPassword($this->userPasswordHasher->hashPassword($user, $password))
+            ->setToken(null);
 
         $this->entityManager->flush();
     }
 
     /**
      * @throws UserNotFoundException
+     * @throws \Exception
      */
     public function verify(string $email, string $token): void
     {
@@ -128,7 +137,9 @@ class AuthService
             throw new UserNotFoundException();
         }
 
-        $user->setVerified(true);
+        $user
+            ->setVerified(true)
+            ->setToken(null);
 
         $this->entityManager->flush();
     }
