@@ -1,9 +1,10 @@
 services:
-  App\EventListener\ExceptionListener:
-    tags: [ kernel.event_listener ]
   _defaults:
     autowire: true
     autoconfigure: true
+
+  App\EventListener\ExceptionListener:
+    tags: [ kernel.event_listener ]
 
   App\:
     resource: '../src/'

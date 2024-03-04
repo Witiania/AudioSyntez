@@ -42,8 +42,8 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\Column(nullable: false)]
     private bool $verified = false;
 
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $token;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $token = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $createdAt = null;
@@ -159,12 +159,12 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getToken(): string
+    public function getToken(): ?string
     {
         return $this->token;
     }
 
-    public function setToken(string $token): self
+    public function setToken(?string $token): self
     {
         $this->token = $token;
 
