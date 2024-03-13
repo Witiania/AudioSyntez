@@ -35,3 +35,8 @@ phpstan.neon
 
 #Ignore temp files
 *.tmp
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###

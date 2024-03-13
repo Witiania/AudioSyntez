@@ -46,10 +46,7 @@ class BalanceController extends AbstractController
         response: 403,
         description: 'Insufficient funds/Permission denied'
     )]
-    #[OA\Response(
-        response: 400,
-        description: 'Validation failed'
-    )]
+
     public function balanceReplenish(BalanceRequestDTO $requestDTO): JsonResponse
     {
         try {

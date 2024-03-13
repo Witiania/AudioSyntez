@@ -38,7 +38,7 @@ class AuthController extends AbstractController
         return $this->render('auth/reset_code.html.twig');
     }
 
-    #[ Route('/home_page', name: 'home_page', methods: 'GET')]
+    #[Route('/home_page', name: 'home_page', methods: 'GET')]
     public function homePage(): Response
     {
         return $this->render('auth/home_page.html.twig');
