@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         let responseStatus = null;
-        fetch('/login', requestOptions)
+        fetch('/api/login', requestOptions)
             .then(response => {
                 responseStatus = response.status;
                 return response.json();

@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[AsEventListener]
 class ExceptionListener
@@ -23,15 +24,20 @@ class ExceptionListener
         );
         $response = new JsonResponse();
 
+        $response->setData(['message' => $message]);
+
         switch (true) {
             case $exception instanceof ValidationFailedException:
-                $response->setData(['message' => $message]);
                 $response->setStatusCode(400);
                 $this->logger->info($message, ['exception' => $exception]);
                 break;
             case $exception instanceof DuplicateException:
-                $response->setData(['message' => $message]);
                 $response->setStatusCode(409);
+                $this->logger->warning($message, ['exception' => $exception]);
+                break;
+            case $exception instanceof NotFoundHttpException:
+                $response->setStatusCode(404);
+                $response->setData(['message' => 'Page not found']);
                 $this->logger->warning($message, ['exception' => $exception]);
                 break;
             default:
