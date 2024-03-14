@@ -25,61 +25,30 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(data => {
                 const modal = new bootstrap.Modal(document.getElementById('myModal'));
-                const error = data.message.split('\n');
 
-                switch (responseStatus) {
-                    case 200:
-                        window.location.href = '/verify'//перенаправляем на главную страницу при успехе
-                        break;
+                if (responseStatus !== 200) {
 
-                    case 409:
-                        document.getElementById('modalTitle').textContent = 'Ошибка';
-                        document.getElementById('modalBody').textContent =
-                            'Пользователь с данной почтой уже существует';
-                        break;
+                    document.getElementById('modalTitle').textContent = 'Ошибка';
+                    switch (responseStatus) {
 
-                    case 400:
-                        switch (error[0]) {
-                            case 'Wrong email':
-                                document.getElementById('modalTitle').textContent = 'Ошибка';
-                                document.getElementById('modalBody').textContent =
-                                    'Введен некорректный email';
-                                break;
+                        case 409:
+                            document.getElementById('modalBody').textContent =
+                                'A user with this email already exists';
+                            break;
 
-                            case 'Wrong name':
-                                document.getElementById('modalTitle').textContent = 'Ошибка';
-                                document.getElementById('modalBody').textContent =
-                                    'Введено некорректное имя (минимальная длина 3 символа, маскимальная 20)';
-                                break;
+                        case 400:
+                            const errorMessage = data['message'].split('\n').join('<br>');
+                            document.getElementById('modalBody').innerHTML = errorMessage;
+                            break;
+                    }
 
-                            case 'Wrong password':
-                                document.getElementById('modalTitle').textContent = 'Ошибка';
-                                document.getElementById('modalBody').textContent =
-                                    'Введен некорректный пароль';
-                                break;
-
-                            case 'Wrong phone':
-                                document.getElementById('modalTitle').textContent = 'Ошибка';
-                                document.getElementById('modalBody').textContent =
-                                    'Введен некорретный номер телефона';
-                                break;
-                        }
-                        break;
-
-                    default:
-                        document.getElementById('modalTitle').textContent = 'Ошибка';
-                        document.getElementById('modalBody').textContent =
-                            'Не удалось зарегистрировать пользователя';
-                        break;
+                    modal.show();
+                    return;
                 }
 
-                modal.show();
+                localStorage.setItem('emailForVerification', formData.get('email'));
+                window.location.href = '/verify'
+
             })
-            .catch(error => {
-                const modal = new bootstrap.Modal(document.getElementById('myModal'));
-                document.getElementById('modalTitle').textContent = 'Ошибка';
-                document.getElementById('modalBody').textContent = 'Регистрация невозможна';
-                modal.show();
-            });
     });
 });

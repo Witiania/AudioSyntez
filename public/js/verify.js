@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const emailField = document.getElementById('email');
+    const storedEmail = localStorage.getItem('emailForVerification');
+    if (storedEmail) {
+        emailField.value = storedEmail; // Устанавливаем email из localStorage как значение по умолчанию
+    }
     const form = document.getElementById('verify-form');
     form.addEventListener('submit', function (event) {
         event.preventDefault();
