@@ -18,9 +18,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthServiceTest extends TestCase
 {
-    private MockObject|EntityManagerInterface $mockEntityManager;
-    private MockObject|EntityRepository $mockUserRepository;
-    private MockObject|MailerInterface $mockMailerInterface;
+    private MockObject $mockEntityManager;
+    private MockObject $mockUserRepository;
+    private MockObject $mockMailerInterface;
     private Users $user;
     private AuthService $authService;
 
@@ -33,7 +33,7 @@ class AuthServiceTest extends TestCase
         $this->mockUserRepository = $this->createMock(EntityRepository::class);
         $this->mockMailerInterface = $this->createMock(MailerInterface::class);
         $mockPasswordHasher = $this->createMock(UserPasswordHasherInterface::class);
-        $this->user = new Users();
+        $this->user = (new Users())->setToken('123123');
 
         $this->mockEntityManager
             ->method('getRepository')
@@ -51,7 +51,6 @@ class AuthServiceTest extends TestCase
     /**
      * @throws DuplicateException
      * @throws EmailTransactionException
-     * @throws Exception
      */
     public function testRegisterSuccess(): void
     {
@@ -72,7 +71,7 @@ class AuthServiceTest extends TestCase
 
     /**
      * @throws EmailTransactionException
-     * @throws Exception
+     * @throws DuplicateException
      */
     public function testRegisterDuplicateException(): void
     {
@@ -117,7 +116,6 @@ class AuthServiceTest extends TestCase
     }
 
     /**
-     * @throws Exception
      * @throws EmailTransactionException
      * @throws UserNotFoundException
      */
@@ -144,7 +142,7 @@ class AuthServiceTest extends TestCase
     }
 
     /**
-     * @throws Exception
+     * @throws UserNotFoundException
      * @throws EmailTransactionException
      */
     public function testSendResetCodeUserNotFoundException(): void
@@ -175,7 +173,6 @@ class AuthServiceTest extends TestCase
 
     /**
      * @throws UserNotFoundException
-     * @throws Exception
      */
     public function testResetPasswordSuccess(): void
     {
@@ -192,11 +189,11 @@ class AuthServiceTest extends TestCase
             ->expects(self::once())
             ->method('flush');
 
-        $this->authService->resetPassword('test@test.test', 'test', 'test');
+        $this->authService->resetPassword('test@test.test', (string) $this->user->getToken(), 'test');
     }
 
     /**
-     * @throws Exception
+     * @throws UserNotFoundException
      */
     public function testResetPasswordUserNotFoundException(): void
     {
@@ -210,14 +207,9 @@ class AuthServiceTest extends TestCase
 
     /**
      * @throws UserNotFoundException
-     * @throws Exception
      */
     public function testVerifySuccess(): void
     {
-        $this->mockUserRepository
-            ->method('findOneBy')
-            ->willReturn($this->user);
-
         $this->mockUserRepository
             ->expects(self::once())
             ->method('findOneBy')
@@ -227,11 +219,11 @@ class AuthServiceTest extends TestCase
             ->expects(self::once())
             ->method('flush');
 
-        $this->authService->verify('test@test.test', 'test');
+        $this->authService->verify('test@test.test', (string) $this->user->getToken());
     }
 
     /**
-     * @throws Exception
+     * @throws UserNotFoundException
      */
     public function testVerifyUserNotFoundException(): void
     {

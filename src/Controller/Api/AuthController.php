@@ -3,15 +3,15 @@
 namespace App\Controller\Api;
 
 use App\DTO\RegistrationRequestDTO;
-use App\DTO\ResetRequestDTO;
-use App\DTO\SendResetRequestDTO;
-use App\DTO\VerifyRequestDTO;
+use App\DTO\ResetPasswordRequestDTO;
+use App\DTO\SendResetCodeRequestDTO;
+use App\DTO\VerifyEmailRequestDTO;
+use App\Exception\DuplicateException;
 use App\Exception\EmailTransactionException;
 use App\Exception\UserNotFoundException;
 use App\Service\AuthService;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,11 +21,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends AbstractController
 {
     public function __construct(
-        private readonly AuthService $authService,
-        private readonly LoggerInterface $logger
+        private readonly AuthService $authService
     ) {
     }
 
+    /**
+     * @throws DuplicateException
+     * @throws EmailTransactionException
+     */
     #[Route('/register', name: 'register', methods: 'POST')]
     #[OA\Post(
         path: '/api/register',
@@ -42,10 +45,6 @@ class AuthController extends AbstractController
         description: 'Register success'
     )]
     #[OA\Response(
-        response: 500,
-        description: 'Internal server error'
-    )]
-    #[OA\Response(
         response: 409,
         description: 'User already exists'
     )]
@@ -55,22 +54,20 @@ class AuthController extends AbstractController
     )]
     public function register(RegistrationRequestDTO $requestDTO): JsonResponse
     {
-        try {
-            $this->authService->register(
-                $requestDTO->getEmail(),
-                $requestDTO->getPhone(),
-                $requestDTO->getName(),
-                $requestDTO->getPassword()
-            );
-        } catch (EmailTransactionException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+        $this->authService->register(
+            $requestDTO->getEmail(),
+            $requestDTO->getPhone(),
+            $requestDTO->getName(),
+            $requestDTO->getPassword()
+        );
 
-            return new JsonResponse(['message' => $e->getMessage()], 500);
-        }
-
-        return new JsonResponse(['message' => 'Register success']);
+        return new JsonResponse('Success');
     }
 
+    /**
+     * @throws UserNotFoundException
+     * @throws EmailTransactionException
+     */
     #[Route('/send_for_reset', name: 'send_for_reset', methods: 'POST')]
     #[OA\Post(
         path: '/api/send_for_reset',
@@ -78,7 +75,7 @@ class AuthController extends AbstractController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 ref: new Model(
-                    type: SendResetRequestDTO::class)
+                    type: SendResetCodeRequestDTO::class)
             )
         )
     )]
@@ -87,10 +84,6 @@ class AuthController extends AbstractController
         description: 'The key has been sent by email'
     )]
     #[OA\Response(
-        response: 500,
-        description: 'Internal server error'
-    )]
-    #[OA\Response(
         response: 404,
         description: 'User not found'
     )]
@@ -98,23 +91,16 @@ class AuthController extends AbstractController
         response: 400,
         description: 'Validation failed'
     )]
-    public function sendResetCode(SendResetRequestDTO $requestDTO): JsonResponse
+    public function sendResetCode(SendResetCodeRequestDTO $requestDTO): JsonResponse
     {
-        try {
-            $this->authService->sendResetCode($requestDTO->getEmail());
-        } catch (EmailTransactionException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+        $this->authService->sendResetCode($requestDTO->getEmail());
 
-            return new JsonResponse(['message' => $e->getMessage()], 500);
-        } catch (UserNotFoundException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
-
-            return new JsonResponse(['message' => $e->getMessage()], 404);
-        }
-
-        return new JsonResponse(['message' => 'The key has been sent by email']);
+        return new JsonResponse('Success');
     }
 
+    /**
+     * @throws UserNotFoundException
+     */
     #[Route('/reset', name: 'reset', methods: 'POST')]
     #[OA\Post(
         path: '/api/reset',
@@ -122,7 +108,7 @@ class AuthController extends AbstractController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 ref: new Model(
-                    type: ResetRequestDTO::class)
+                    type: ResetPasswordRequestDTO::class)
             )
         )
     )]
@@ -131,10 +117,6 @@ class AuthController extends AbstractController
         description: 'New password added'
     )]
     #[OA\Response(
-        response: 500,
-        description: 'Internal server error'
-    )]
-    #[OA\Response(
         response: 404,
         description: 'User not found'
     )]
@@ -142,23 +124,20 @@ class AuthController extends AbstractController
         response: 400,
         description: 'Validation failed'
     )]
-    public function reset(ResetRequestDTO $requestDTO): JsonResponse
+    public function reset(ResetPasswordRequestDTO $requestDTO): JsonResponse
     {
-        try {
-            $this->authService->resetPassword(
-                $requestDTO->getEmail(),
-                $requestDTO->getToken(),
-                $requestDTO->getPassword()
-            );
-        } catch (UserNotFoundException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+        $this->authService->resetPassword(
+            $requestDTO->getEmail(),
+            $requestDTO->getToken(),
+            $requestDTO->getPassword()
+        );
 
-            return new JsonResponse(['message' => $e->getMessage()], 404);
-        }
-
-        return new JsonResponse(['message' => 'New password added']);
+        return new JsonResponse('Success');
     }
 
+    /**
+     * @throws UserNotFoundException
+     */
     #[Route('/verify', name: 'verify', methods: 'POST')]
     #[OA\Post(
         path: '/api/verify',
@@ -166,7 +145,7 @@ class AuthController extends AbstractController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 ref: new Model(
-                    type: VerifyRequestDTO::class)
+                    type: VerifyEmailRequestDTO::class)
             )
         )
     )]
@@ -182,16 +161,10 @@ class AuthController extends AbstractController
         response: 400,
         description: 'Validation failed'
     )]
-    public function verify(VerifyRequestDTO $requestDTO): JsonResponse
+    public function verify(VerifyEmailRequestDTO $requestDTO): JsonResponse
     {
-        try {
-            $this->authService->verify($requestDTO->getEmail(), $requestDTO->getToken());
-        } catch (UserNotFoundException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
+        $this->authService->verify($requestDTO->getEmail(), $requestDTO->getToken());
 
-            return new JsonResponse(['message' => $e->getMessage()], 404);
-        }
-
-        return new JsonResponse(['message' => 'Success']);
+        return new JsonResponse('Success');
     }
 }

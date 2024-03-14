@@ -3,12 +3,18 @@
 namespace App\EventListener;
 
 use App\Exception\DuplicateException;
+use App\Exception\IllegalAccessException;
+use App\Exception\UserNotFoundException;
 use App\Exception\ValidationFailedException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 
 #[AsEventListener]
 class ExceptionListener
@@ -20,32 +26,35 @@ class ExceptionListener
     public function __invoke(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
-        $message = sprintf('%s', $exception->getMessage(),
-        );
-        $response = new JsonResponse();
+        $response = new JsonResponse(['message' => $exception->getMessage()]);
 
-        $response->setData(['message' => $message]);
-
-        switch (true) {
-            case $exception instanceof ValidationFailedException:
-                $response->setStatusCode(400);
-                $this->logger->info($message, ['exception' => $exception]);
+        switch ($exception::class) {
+            case MethodNotAllowedHttpException::class:
+            case NotFoundHttpException::class:
+            case \TypeError::class:
+                $this->logger->warning($exception);
+                $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                $response->setContent('Page not found');
                 break;
-            case $exception instanceof DuplicateException:
-                $response->setStatusCode(409);
-                $this->logger->warning($message, ['exception' => $exception]);
+            case NotNormalizableValueException::class:
+            case BadRequestHttpException::class:
+            case ValidationFailedException::class:
+                $this->logger->info($exception);
+                $response->setStatusCode(Response::HTTP_BAD_REQUEST);
                 break;
-            case $exception instanceof NotFoundHttpException:
-                $response->setStatusCode(404);
-                $response->setData(['message' => 'Page not found']);
-                $this->logger->warning($message, ['exception' => $exception]);
+            case IllegalAccessException::class:
+            case DuplicateException::class:
+            case UserNotFoundException::class:
+                $this->logger->warning($exception);
+                $response->setStatusCode($exception->getCode());
                 break;
             default:
-                $response->setData(['message' => 'Internal server error']);
-                $response->setStatusCode(500);
-                $this->logger->error($message, ['exception' => $exception]);
+                $this->logger->error($exception);
+                $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+                $response->setContent('Internal server error');
                 break;
         }
+
         $event->setResponse($response);
     }
 }

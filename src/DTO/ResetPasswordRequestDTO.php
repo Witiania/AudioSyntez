@@ -7,19 +7,22 @@ namespace App\DTO;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\PasswordStrength;
 
-final class ResetRequestDTO implements DTOResolverInterface
+final class ResetPasswordRequestDTO implements DTOResolverInterface
 {
-    #[Assert\NotBlank]
-    #[Assert\Email]
+    #[Assert\NotBlank(message: 'Email cannot be empty.')]
+    #[Assert\Email(message: 'Email\'s value does not fit.')]
     private string $email;
 
-    #[Assert\NotCompromisedPassword]
-    #[PasswordStrength(['minScore' => PasswordStrength::STRENGTH_WEAK])]
+    #[Assert\NotCompromisedPassword(message: 'Password is compromised.')]
+    #[PasswordStrength(
+        ['minScore' => PasswordStrength::STRENGTH_WEAK],
+        message: 'Password\'s value does not fit.'
+    )]
     private string $password;
 
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
-    #[Assert\Length(exactly: 6)]
+    #[Assert\NotBlank(message: 'Token cannot be empty.')]
+    #[Assert\Type(type: 'string', message: 'Token\'s value {{ value }} is not a string.')]
+    #[Assert\Length(exactly: 6, exactMessage: 'Token can only be 6 characters.')]
     private string $token;
 
     public function setEmail(string $email): self

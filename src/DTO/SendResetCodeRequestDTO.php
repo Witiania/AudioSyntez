@@ -6,10 +6,10 @@ namespace App\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-final class SendResetRequestDTO implements DTOResolverInterface
+final class SendResetCodeRequestDTO implements DTOResolverInterface
 {
-    #[Assert\NotBlank]
-    #[Assert\Email]
+    #[Assert\NotBlank(message: 'Email cannot be empty.')]
+    #[Assert\Email(message: 'Email\'s value does not fit.')]
     private string $email;
 
     public function setEmail(string $email): self

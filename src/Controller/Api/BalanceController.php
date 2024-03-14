@@ -9,7 +9,6 @@ use App\Exception\UserNotFoundException;
 use App\Service\BalanceService;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes as OA;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,11 +18,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class BalanceController extends AbstractController
 {
     public function __construct(
-        private readonly BalanceService $balanceService,
-        private readonly LoggerInterface $logger
+        private readonly BalanceService $balanceService
     ) {
     }
 
+    /**
+     * @throws UserNotFoundException
+     * @throws IllegalAccessException
+     * @throws BalanceTransactionException
+     */
     #[Route(name: 'balance_replenish', methods: 'PUT')]
     #[OA\Put(
         requestBody: new OA\RequestBody(
@@ -44,37 +47,33 @@ class BalanceController extends AbstractController
     )]
     #[OA\Response(
         response: 403,
-        description: 'Insufficient funds/Permission denied'
+        description: 'Insufficient funds / Permission denied'
     )]
-
+    #[OA\Response(
+        response: 400,
+        description: 'Validation failed'
+    )]
     public function balanceReplenish(BalanceRequestDTO $requestDTO): JsonResponse
     {
-        try {
-            $this->balanceService->replenish($requestDTO->getAmount(), $requestDTO->getId());
-        } catch (BalanceTransactionException|IllegalAccessException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
-
-            return new JsonResponse($e->getMessage(), 403);
-        } catch (UserNotFoundException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
-
-            return new JsonResponse($e->getMessage(), 404);
-        }
+        $this->balanceService->replenish($requestDTO->getAmount(), $requestDTO->getId());
 
         return new JsonResponse('Success');
     }
 
+    /**
+     * @throws UserNotFoundException
+     */
     #[Route(name: 'balance_view', methods: 'GET')]
-    #[OA\Response(response: 200, description: "Returns user's balance. Type INT")]
-    #[OA\Response(response: 404, description: 'User not found')]
+    #[OA\Response(
+        response: 200,
+        description: "User's balance"
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'User not found'
+    )]
     public function balanceView(): JsonResponse
     {
-        try {
-            return new JsonResponse($this->balanceService->view());
-        } catch (UserNotFoundException $e) {
-            $this->logger->warning($e->getMessage(), ['exception' => $e]);
-
-            return new JsonResponse($e->getMessage(), 404);
-        }
+        return new JsonResponse($this->balanceService->view());
     }
 }

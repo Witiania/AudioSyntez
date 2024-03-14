@@ -8,13 +8,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final class BalanceRequestDTO implements DTOResolverInterface
 {
-    #[Assert\NotBlank]
-    #[Assert\Type('string')]
+    #[Assert\NotBlank(message: 'Id cannot be empty.')]
+    #[Assert\Type(type: 'string', message: 'Id\'s value {{ value }} is not a string.')]
     private string $id;
 
-    #[Assert\NotBlank]
-    #[Assert\Type('integer')]
-    #[Assert\NotIdenticalTo(value: 0)]
+    #[Assert\NotBlank(message: 'Amount cannot be empty.')]
+    #[Assert\Type(type: 'integer', message: 'Amount\'s value {{ value }} is not an integer.')]
+    #[Assert\NotIdenticalTo(value: 0, message: 'Amount cannot be a zero.')]
     private int $amount;
 
     public function getId(): string
