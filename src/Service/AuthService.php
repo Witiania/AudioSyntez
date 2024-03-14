@@ -78,8 +78,8 @@ class AuthService
 
     /**
      * @throws UserNotFoundException
-     * @throws \Exception
      * @throws EmailTransactionException
+     * @throws \Exception
      */
     public function sendResetCode(string $email): void
     {
@@ -100,7 +100,6 @@ class AuthService
 
     /**
      * @throws UserNotFoundException
-     * @throws \Exception
      */
     public function resetPassword(string $email, string $token, string $password): void
     {
@@ -114,32 +113,27 @@ class AuthService
             throw new UserNotFoundException();
         }
 
-        $user
-            ->setPassword($this->userPasswordHasher->hashPassword($user, $password))
-            ->setToken(null);
+        $user->setPassword($this->userPasswordHasher->hashPassword($user, $password))->setToken(null);
 
         $this->entityManager->flush();
     }
 
     /**
      * @throws UserNotFoundException
-     * @throws \Exception
      */
     public function verify(string $email, string $token): void
     {
         /** @var Users|null $user */
         $user = $this->userRepository->findOneBy([
-            'email' => $email,
-            'token' => $token,
-        ]);
+                'email' => $email,
+                'token' => $token,
+            ]);
 
         if (null === $user) {
             throw new UserNotFoundException();
         }
 
-        $user
-            ->setVerified(true)
-            ->setToken(null);
+        $user->setVerified(true)->setToken(null);
 
         $this->entityManager->flush();
     }

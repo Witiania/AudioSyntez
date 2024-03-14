@@ -39,7 +39,7 @@
         ]
     },
     "friendsofphp/php-cs-fixer": {
-        "version": "3.50",
+        "version": "3.51",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -63,7 +63,7 @@
         ]
     },
     "nelmio/api-doc-bundle": {
-        "version": "4.20",
+        "version": "4.23",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
@@ -169,7 +169,7 @@
         ]
     },
     "symfony/maker-bundle": {
-        "version": "1.55",
+        "version": "1.56",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -266,5 +266,14 @@
         "files": [
             "config/packages/validator.yaml"
         ]
+    },
+    "vincentlanglet/twig-cs-fixer": {
+        "version": "2.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.6",
+            "ref": "e4da12a48e8138479bd24a675321bcfd84950266"
+        }
     }
 }

@@ -17,11 +17,12 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 class BalanceServiceTest extends TestCase
 {
-    private MockObject|Security $mockSecurity;
-    private MockObject|EntityManagerInterface $mockEntityManager;
-    private MockObject|EntityRepository $mockUserRepository;
-    private MockObject|Users $user;
-    private MockObject|Wallet $wallet;
+    private MockObject $mockSecurity;
+    private MockObject $mockEntityManager;
+    private MockObject $mockUserRepository;
+    private BalanceService $balanceService;
+    private Users $user;
+    private Wallet $wallet;
 
     /**
      * @throws Exception
@@ -46,8 +47,13 @@ class BalanceServiceTest extends TestCase
             ->method('getRepository')
             ->with(Users::class)
             ->willReturn($this->mockUserRepository);
+
+        $this->balanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
     }
 
+    /**
+     * @return array<array<int>>
+     */
     public static function viewDataProvider(): array
     {
         return [
@@ -60,6 +66,9 @@ class BalanceServiceTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array<int>>
+     */
     public static function replenishDataProvider(): array
     {
         return [
@@ -79,8 +88,6 @@ class BalanceServiceTest extends TestCase
      */
     public function testViewSuccess(int $amount, int $expected): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->wallet->setBalance($amount);
 
         $this->mockSecurity
@@ -92,20 +99,18 @@ class BalanceServiceTest extends TestCase
             ->with($this->user->getUserIdentifier())
             ->willReturn($this->user);
 
-        $balance = $mockBalanceService->view();
+        $balance = $this->balanceService->view();
         self::assertEquals($expected, $balance);
     }
 
     public function testBalanceViewUserNotFoundException(): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->mockSecurity
             ->method('getUser')
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $mockBalanceService->view();
+        $this->balanceService->view();
     }
 
     /**
@@ -117,8 +122,6 @@ class BalanceServiceTest extends TestCase
      */
     public function testReplenishSuccess(int $amount, int $expected): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->mockSecurity
             ->method('getUser')
             ->willReturn($this->user);
@@ -136,7 +139,7 @@ class BalanceServiceTest extends TestCase
             ->expects($this->once())
             ->method('flush');
 
-        $mockBalanceService->replenish($amount, 'test');
+        $this->balanceService->replenish($amount, 'test');
         self::assertEquals($expected, $this->wallet->getBalance());
     }
 
@@ -146,14 +149,12 @@ class BalanceServiceTest extends TestCase
      */
     public function testReplenishUserNotFoundException(): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->mockUserRepository
             ->method('find')
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $mockBalanceService->replenish(0, $this->user->getId());
+        $this->balanceService->replenish(0, $this->user->getId());
     }
 
     /**
@@ -162,8 +163,6 @@ class BalanceServiceTest extends TestCase
      */
     public function testReplenishIllegalAccessException(): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->mockSecurity
             ->method('getUser')
             ->willReturn($this->user);
@@ -173,7 +172,7 @@ class BalanceServiceTest extends TestCase
             ->willReturn($this->user);
 
         self::expectException(IllegalAccessException::class);
-        $mockBalanceService->replenish(1, $this->user->getId());
+        $this->balanceService->replenish(1, $this->user->getId());
     }
 
     /**
@@ -183,8 +182,6 @@ class BalanceServiceTest extends TestCase
      */
     public function testReplenishBalanceTransactionException(): void
     {
-        $mockBalanceService = new BalanceService($this->mockSecurity, $this->mockEntityManager);
-
         $this->mockSecurity
             ->method('getUser')
             ->willReturn($this->user);
@@ -196,6 +193,6 @@ class BalanceServiceTest extends TestCase
         $this->wallet->setBalance(-1);
 
         self::expectException(BalanceTransactionException::class);
-        $mockBalanceService->replenish(-1, $this->user->getId());
+        $this->balanceService->replenish(-1, $this->user->getId());
     }
 }

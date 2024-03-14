@@ -19,7 +19,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'guid', type: Types::GUID, unique: true, nullable: false)]
-    private ?string $id = null;
+    private string $id;
 
     #[ORM\OneToOne(targetEntity: Wallet::class)]
     #[ORM\JoinColumn(name: 'wallet', referencedColumnName: 'guid', unique: true, nullable: false)]
@@ -63,7 +63,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         $this->setUpdatedAt(new \DateTime());
     }
 
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }
@@ -200,7 +200,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
         return [$this->role];
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 

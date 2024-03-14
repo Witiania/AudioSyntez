@@ -28,6 +28,7 @@ phpstan.neon
 ###< phpstan/phpstan ###
 
 /.idea/
+/.twig-cs-fixer.cache
 
 #Ignore docker files
 /compose.override.yaml
@@ -35,8 +36,3 @@ phpstan.neon
 
 #Ignore temp files
 *.tmp
-
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
