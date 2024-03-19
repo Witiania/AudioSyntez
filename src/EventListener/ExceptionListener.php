@@ -32,7 +32,6 @@ class ExceptionListener
                 break;
             case MethodNotAllowedHttpException::class:
             case NotFoundHttpException::class:
-            case \TypeError::class:
                 $this->logger->warning($exception);
                 $response->setStatusCode(Response::HTTP_NOT_FOUND);
                 $response->setContent('Page not found');
@@ -41,6 +40,17 @@ class ExceptionListener
             case BadRequestHttpException::class:
                 $this->logger->info($exception);
                 $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+                break;
+            case \TypeError::class:
+                $this->logger->info($exception);
+                $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+                $response->setContent("Validation error");
+                break;
+            case IllegalAccessException::class:
+            case DuplicateException::class:
+            case UserNotFoundException::class:
+                $this->logger->warning($exception);
+                $response->setStatusCode($exception->getCode());
                 break;
             default:
                 $this->logger->error($exception);
