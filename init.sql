@@ -1,4 +1,4 @@
-create database postgres_test;
-create extension if not exists "uuid-ossp";
+CREATE DATABASE postgres_test;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 \connect postgres_test;
-create extension if not exists "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

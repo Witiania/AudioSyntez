@@ -23,12 +23,15 @@
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 
+###> vincentlanglet/twig-cs-fixer ###
+/.twig-cs-fixer.cache
+###< vincentlanglet/twig-cs-fixer ###
+
 ###> phpstan/phpstan ###
 phpstan.neon
 ###< phpstan/phpstan ###
 
 /.idea/
-/.twig-cs-fixer.cache
 
 #Ignore docker files
 /compose.override.yaml
