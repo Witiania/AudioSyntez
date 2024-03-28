@@ -14,3 +14,6 @@ test:
 
 doc:
 	php bin/console nelmio:apidoc:dump --format=html
+
+setup:
+	cp ./pre-commit ./.git/hooks/

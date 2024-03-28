@@ -1,0 +1,16 @@
+#!/bin/sh
+
+./vendor/bin/php-cs-fixer fix
+./vendor/bin/phpstan analyse
+
+./vendor/bin/php-cs-fixer fix
+./vendor/bin/phpstan analyse
+./vendor/bin/twig-cs-fixer lint --fix
+php bin/phpunit tests
+
+if git diff --quiet; then
+    echo "хук успешно выполнен"
+else
+    echo "хук обнаружил изменения,внесите изменения и закоммитьте их"
+    exit 1
+fi
