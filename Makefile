@@ -17,4 +17,5 @@ doc:
 
 setup:
 	touch ./.git/hooks/pre-commit
-	ln ./pre-commit ./.git/hooks/pre-commit
+	chmod +x ./.git/hooks/pre-commit
+	ln -sf ./pre-commit ./.git/hooks/pre-commit
