@@ -16,4 +16,5 @@ doc:
 	php bin/console nelmio:apidoc:dump --format=html
 
 setup:
-	cp ./pre-commit ./.git/hooks/
+	touch ./.git/hooks/pre-commit
+	ln ./pre-commit ./.git/hooks/pre-commit
