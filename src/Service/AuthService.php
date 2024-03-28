@@ -125,9 +125,9 @@ class AuthService
     {
         /** @var Users|null $user */
         $user = $this->userRepository->findOneBy([
-                'email' => $email,
-                'token' => $token,
-            ]);
+            'email' => $email,
+            'token' => $token,
+        ]);
 
         if (null === $user) {
             throw new UserNotFoundException();

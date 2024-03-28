@@ -44,7 +44,7 @@ class ExceptionListener
             case \TypeError::class:
                 $this->logger->info($exception);
                 $response->setStatusCode(Response::HTTP_BAD_REQUEST);
-                $response->setContent("Validation error");
+                $response->setContent('Validation error');
                 break;
             case IllegalAccessException::class:
             case DuplicateException::class:
