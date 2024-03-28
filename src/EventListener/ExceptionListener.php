@@ -26,7 +26,7 @@ class ExceptionListener
         $response = new JsonResponse(['message' => $exception->getMessage()]);
 
         switch ($exception::class) {
-            case is_subclass_of($exception, AbstractCustomException::class):
+            case $exception instanceof AbstractCustomException:
                 $exception->log($this->logger);
                 $response->setStatusCode($exception->getCode());
                 break;
@@ -44,13 +44,7 @@ class ExceptionListener
             case \TypeError::class:
                 $this->logger->info($exception);
                 $response->setStatusCode(Response::HTTP_BAD_REQUEST);
-                $response->setContent("Validation error");
-                break;
-            case IllegalAccessException::class:
-            case DuplicateException::class:
-            case UserNotFoundException::class:
-                $this->logger->warning($exception);
-                $response->setStatusCode($exception->getCode());
+                $response->setContent('Validation error');
                 break;
             default:
                 $this->logger->error($exception);

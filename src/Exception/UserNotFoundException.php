@@ -5,10 +5,10 @@ namespace App\Exception;
 class UserNotFoundException extends AbstractCustomException
 {
     public function __construct(
-        string $level = parent::INFO,
         string $message = 'User not found',
         int $code = 404,
-        ?\Throwable $previous = null
+        ?\Throwable $previous = null,
+        string $level = parent::INFO
     ) {
         parent::__construct($message, $code, $previous, $level);
     }
