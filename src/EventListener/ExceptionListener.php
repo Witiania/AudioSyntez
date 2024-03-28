@@ -3,6 +3,9 @@
 namespace App\EventListener;
 
 use App\Exception\AbstractCustomException;
+use App\Exception\DuplicateException;
+use App\Exception\IllegalAccessException;
+use App\Exception\UserNotFoundException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
