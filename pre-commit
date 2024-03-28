@@ -2,9 +2,6 @@
 
 ./vendor/bin/php-cs-fixer fix
 ./vendor/bin/phpstan analyse
-
-./vendor/bin/php-cs-fixer fix
-./vendor/bin/phpstan analyse
 ./vendor/bin/twig-cs-fixer lint --fix
 php bin/phpunit tests
 
