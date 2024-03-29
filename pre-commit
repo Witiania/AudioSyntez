@@ -13,7 +13,7 @@ if [ $? -ne 0 ]; then
     echo "Внимание! phpstan обнаружил ошибки, необходимо исправить и закоммитить код заново"
     exit 1
 else
-    echo "phpstan не обнаружил ошибок!"
+    echo "phpstan не обнаружил ошибок"
 fi
 
 ./vendor/bin/twig-cs-fixer lint --fix
