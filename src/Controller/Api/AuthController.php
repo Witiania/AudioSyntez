@@ -54,7 +54,7 @@ class AuthController extends AbstractController
     )]
     public function register(RegistrationRequestDTO $requestDTO): JsonResponse
     {
-        $this->authService->register(
+                $this->authService->register(
             $requestDTO->getEmail(),
             $requestDTO->getPhone(),
             $requestDTO->getName(),
