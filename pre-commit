@@ -1,29 +1,32 @@
 #!/bin/sh
 
 ./vendor/bin/php-cs-fixer fix
+if git diff --quiet; then
+    echo "php-cs-fixer не онаружил проблем"
+else
+    echo "внимание! php-cs-fixer нашел нарушения , код был исправлен! повторите commit"
+    exit 0
+fi
 
 ./vendor/bin/phpstan analyse
 if [ $? -ne 0 ]; then
     echo "внимание! phpstan обнаружил ошибки, необходимо исправить и закоммитить код заново"
     exit 1
-else
-    echo "phpstan не обнаружил ошибок"
 fi
 
 ./vendor/bin/twig-cs-fixer lint --fix
+if git diff --quiet; then
+    echo "twig-cs-fixer не онаружил проблем"
+else
+    echo "внимание! twig-cs-fixer нашел нарушения , код был исправлен! повторите commit"
+    exit 0
+fi
 
 php bin/phpunit tests
 if [ $? -eq 0 ]; then
     echo "Тесты прошли успешно"
 else
     echo "Один или несколько тестов не прошли"
-    exit 1
-fi
-
-if git diff --quiet; then
-    echo "cs-fixer не обнаружил проблем, изменений не внесено"
-else
-    echo "внимание! cs-fixer нашел нарушения, код был исправлен, изменения закоммичены"
     exit 1
 fi
 
