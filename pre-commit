@@ -1,9 +1,21 @@
 #!/bin/sh
 
 ./vendor/bin/php-cs-fixer fix
+git diff
+
 ./vendor/bin/phpstan analyse
+git diff
+
 ./vendor/bin/twig-cs-fixer lint --fix
+git diff
+
 php bin/phpunit tests
+if [ $? -eq 0 ]; then
+    echo "Тесты прошли успешно"
+else
+    echo "Один или несколько тестов не прошли"
+    exit 1
+fi
 
 if git diff --quiet; then
     echo "хук успешно выполнен"
