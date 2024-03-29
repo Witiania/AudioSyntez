@@ -8,9 +8,7 @@ else
 fi
 
 ./vendor/bin/phpstan analyse
-if git diff --quiet; then
-    echo "phpstan не онаружил проблем"
-else
+if [ $? -ne 0 ]; then
     echo "внимание! phpstan обнаружил ошибки, необходимо исправить и закоммитить код заново"
     exit 1
 fi
