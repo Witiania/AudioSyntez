@@ -1,13 +1,13 @@
 #!/bin/sh
 
 ./vendor/bin/php-cs-fixer fix
-git diff
+git diff --quiet
 
 ./vendor/bin/phpstan analyse
-git diff
+git diff --quiet
 
 ./vendor/bin/twig-cs-fixer lint --fix
-git diff
+git diff --quiet
 
 php bin/phpunit tests
 if [ $? -eq 0 ]; then
