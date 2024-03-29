@@ -12,7 +12,6 @@ git diff --quiet
 php bin/phpunit tests
 if [ $? -eq 0 ]; then
     echo "Тесты прошли успешно"
-    git diff --quiet
 else
     echo "Один или несколько тестов не прошли"
     exit 1
