@@ -126,7 +126,7 @@ class AuthController extends AbstractController
     )]
     public function reset(ResetPasswordRequestDTO $requestDTO): JsonResponse
     {
-                $this->authService->resetPassword(
+        $this->authService->resetPassword(
             $requestDTO->getEmail(),
             $requestDTO->getToken(),
             $requestDTO->getPassword()

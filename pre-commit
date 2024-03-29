@@ -5,6 +5,7 @@ if git diff --quiet; then
     echo "cs-fixer не обнаружил проблем, изменений не внесено"
 else
     echo "внимание! cs-fixer нашел нарушения, код был исправлен!"
+    exit 1
 fi
 
 ./vendor/bin/phpstan analyse
@@ -18,6 +19,7 @@ if git diff --quiet; then
     echo "twig-cs-fixer не онаружил проблем"
 else
     echo "внимание! twig-cs-fixer нашел нарушения , код был исправлен!"
+    exit 1
 fi
 
 php bin/phpunit tests
@@ -27,3 +29,4 @@ else
     echo "Один или несколько тестов не прошли"
     exit 1
 fi
+
