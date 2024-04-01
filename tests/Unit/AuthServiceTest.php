@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Mailer\Exception\TransportException;
+use Psr\Log\NullLogger;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -21,8 +21,8 @@ class AuthServiceTest extends TestCase
     private MockObject $mockEntityManager;
     private MockObject $mockUserRepository;
     private MockObject $mockMailerInterface;
-    private Users $user;
     private AuthService $authService;
+    private Users $user;
 
     /**
      * @throws Exception
@@ -32,8 +32,8 @@ class AuthServiceTest extends TestCase
         $this->mockEntityManager = $this->createMock(EntityManagerInterface::class);
         $this->mockUserRepository = $this->createMock(EntityRepository::class);
         $this->mockMailerInterface = $this->createMock(MailerInterface::class);
-        $mockPasswordHasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->user = (new Users())->setToken('123123');
+        $mockPasswordHasher = $this->createMock(UserPasswordHasherInterface::class);
 
         $this->mockEntityManager
             ->method('getRepository')
@@ -44,6 +44,8 @@ class AuthServiceTest extends TestCase
             $this->mockMailerInterface,
             $this->mockEntityManager,
             $mockPasswordHasher,
+            new NullLogger(),
+            'dev',
             'test@test.test'
         );
     }
@@ -62,10 +64,6 @@ class AuthServiceTest extends TestCase
             ->expects($this->once())
             ->method('flush');
 
-        $this->mockMailerInterface
-            ->expects($this->once())
-            ->method('send');
-
         $this->authService->register('test@test.test', 'test', 'test', 'test');
     }
 
@@ -81,38 +79,6 @@ class AuthServiceTest extends TestCase
 
         self::expectException(DuplicateException::class);
         $this->authService->register('test@test.test', 'test', 'test', 'test');
-    }
-
-    public function testRegisterEmailTransactionException(): void
-    {
-        $this->mockMailerInterface
-            ->method('send')
-            ->willThrowException(new TransportException());
-
-        self::expectException(EmailTransactionException::class);
-        $this->authService->sendEmail('test@test.test', 'test', 'test');
-    }
-
-    /**
-     * @throws EmailTransactionException
-     */
-    public function testSendEmailSuccess(): void
-    {
-        $this->mockMailerInterface
-            ->expects($this->once())
-            ->method('send');
-
-        $this->authService->sendEmail('test@test.test', 'test', 'test');
-    }
-
-    public function testSendEmailEmailTransactionException(): void
-    {
-        $this->mockMailerInterface
-            ->method('send')
-            ->willThrowException(new TransportException());
-
-        self::expectException(EmailTransactionException::class);
-        $this->authService->sendEmail('test@test.test', 'test', 'test');
     }
 
     /**
@@ -134,10 +100,6 @@ class AuthServiceTest extends TestCase
             ->expects(self::once())
             ->method('flush');
 
-        $this->mockMailerInterface
-            ->expects(self::once())
-            ->method('send');
-
         $this->authService->sendResetCode('test@test.test');
     }
 
@@ -152,22 +114,6 @@ class AuthServiceTest extends TestCase
             ->willReturn(null);
 
         self::expectException(UserNotFoundException::class);
-        $this->authService->sendResetCode('test@test.test');
-    }
-
-    /**
-     * @throws UserNotFoundException
-     */
-    public function testSendResetCodeEmailTransactionException(): void
-    {
-        $this->mockUserRepository
-            ->method('findOneBy')
-            ->willReturn($this->user);
-
-        $this->mockMailerInterface
-            ->method('send')->willThrowException(new TransportException());
-
-        self::expectException(EmailTransactionException::class);
         $this->authService->sendResetCode('test@test.test');
     }
 
