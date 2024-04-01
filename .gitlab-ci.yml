@@ -1,0 +1,50 @@
+stages:
+    - build
+    - lint
+    - test
+    - doc
+
+lint:
+    stage: lint
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    before_script:
+        - composer i
+    script:
+        - ./vendor/bin/php-cs-fixer check
+        - ./vendor/bin/phpstan analyse
+        - ./vendor/bin/twig-cs-fixer lint
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+test:
+    stage: test
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    before_script: composer i
+
+    script:
+        - php bin/phpunit tests
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+
+doc:
+    stage: doc
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    before_script: composer i
+    script:
+        - php bin/console nelmio:apidoc:dump --format=html
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+build:
+    stage: build
+    image: docker:24.0.5
+    services:
+        - docker:24.0.5-dind
+    before_script:
+        - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
+    script:
+        - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -f docker/php/Dockerfile .
+        - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
