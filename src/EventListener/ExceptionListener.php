@@ -3,9 +3,6 @@
 namespace App\EventListener;
 
 use App\Exception\AbstractCustomException;
-use App\Exception\DuplicateException;
-use App\Exception\IllegalAccessException;
-use App\Exception\UserNotFoundException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,12 +45,6 @@ class ExceptionListener
                 $this->logger->info($exception);
                 $response->setStatusCode(Response::HTTP_BAD_REQUEST);
                 $response->setContent('Validation error');
-                break;
-            case IllegalAccessException::class:
-            case DuplicateException::class:
-            case UserNotFoundException::class:
-                $this->logger->warning($exception);
-                $response->setStatusCode($exception->getCode());
                 break;
             default:
                 $this->logger->error($exception);
