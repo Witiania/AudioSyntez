@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./vendor/bin/php-cs-fixer fix
+docker exec  audio-syntez-php-1 ./vendor/bin/php-cs-fixer fix
 if git diff; then
     echo "php-cs-fixer не онаружил проблем"
 else
@@ -8,7 +8,7 @@ else
     exit 0
 fi
 
-./vendor/bin/phpstan analyse
+docker exec  audio-syntez-php-1 ./vendor/bin/phpstan analyse
 if [ $? -ne 0 ]; then
     echo "Внимание! phpstan обнаружил ошибки, необходимо исправить и закоммитить код заново"
     exit 1
@@ -16,7 +16,7 @@ else
     echo "phpstan не обнаружил ошибок"
 fi
 
-./vendor/bin/twig-cs-fixer lint --fix
+docker exec  audio-syntez-php-1 ./vendor/bin/twig-cs-fixer lint --fix
 if git diff; then
     echo "twig-cs-fixer не онаружил проблем"
 else
@@ -31,4 +31,3 @@ else
     echo "Внимание! Один или несколько тестов не прошли"
     exit 1
 fi
-
