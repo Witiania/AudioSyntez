@@ -1,10 +1,10 @@
 monolog:
-  channels:
-    - deprecation
+    channels:
+        - deprecation
 
-  handlers:
-    main:
-      type: stream
-      path: "%kernel.logs_dir%/%kernel.environment%.log"
-      level: info
-      channels: [ "!event" ]
+    handlers:
+        main:
+            type: stream
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: info
+            channels: [ "!event" ]

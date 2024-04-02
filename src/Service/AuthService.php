@@ -9,6 +9,7 @@ use App\Exception\EmailTransactionException;
 use App\Exception\UserNotFoundException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -25,6 +26,8 @@ class AuthService
         private readonly MailerInterface $mailer,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $userPasswordHasher,
+        private readonly LoggerInterface $logger,
+        private readonly string $environment,
         private readonly string $email
     ) {
         $this->userRepository = $this->entityManager->getRepository(Users::class);
@@ -65,6 +68,12 @@ class AuthService
     public function sendEmail(string $email, string $subject, string $token): void
     {
         try {
+            if ('prod' !== $this->environment) {
+                $this->logger->debug('Email was sent successfully');
+
+                return;
+            }
+
             $email = (new Email())
                 ->from($this->email)
                 ->to($email)

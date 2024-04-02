@@ -5,10 +5,10 @@ namespace App\Exception;
 class EmailTransactionException extends AbstractCustomException
 {
     public function __construct(
-        string $level = parent::ERROR,
         string $message = 'Failed to send email',
         int $code = 500,
-        ?\Throwable $previous = null
+        ?\Throwable $previous = null,
+        string $level = parent::ERROR
     ) {
         parent::__construct($message, $code, $previous, $level);
     }

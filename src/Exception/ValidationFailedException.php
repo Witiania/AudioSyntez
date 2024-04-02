@@ -5,10 +5,10 @@ namespace App\Exception;
 class ValidationFailedException extends AbstractCustomException
 {
     public function __construct(
-        string $level = parent::INFO,
         string $message = 'Validation failed',
-        int $code = 401,
-        ?\Throwable $previous = null
+        int $code = 400,
+        ?\Throwable $previous = null,
+        string $level = parent::INFO
     ) {
         parent::__construct($message, $code, $previous, $level);
     }
