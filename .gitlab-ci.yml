@@ -19,13 +19,11 @@ lint:
 test:
     stage: test
     image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    before_script:
-        - composer i
-        - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        - chmod +x /usr/local/bin/docker-compose
+    before_script: composer i
+
     script:
-        - docker-compose up -d
-        - docker-compose exec php make test
+        - docker compose up -d
+        - docker compose exec php make test
     rules:
         - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
@@ -41,7 +39,7 @@ doc:
 
 build:
     stage: build
-    image: docker/compose:latest
+#    image: docker/compose:latest
     services:
         - docker:dind
     before_script:
