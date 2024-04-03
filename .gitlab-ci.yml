@@ -21,7 +21,9 @@ test:
     image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     services:
         - docker:dind
-    before_script: composer i
+    before_script:
+        - composer i
+        - docker version
     script:
         - docker-compose up -d
         - docker-compose exec php make test
