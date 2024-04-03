@@ -23,6 +23,7 @@ test:
         - docker:dind
     before_script:
         - composer i
+        - sudo service docker restart
         - docker version
     script:
         - docker-compose up -d
