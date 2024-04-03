@@ -40,9 +40,9 @@ doc:
 
 build:
     stage: build
-    image: docker:24.0.5
+    image: docker/compose:latest
     services:
-        - docker:24.0.5-dind
+        - docker:dind
     before_script:
         - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
     script:
