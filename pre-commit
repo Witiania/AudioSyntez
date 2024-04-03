@@ -1,7 +1,7 @@
 #!/bin/sh
 
 docker exec php ./vendor/bin/php-cs-fixer fix
-if git diff; then
+if git diff --quiet; then
     echo "php-cs-fixer не онаружил проблем"
 else
     echo "Внимание! php-cs-fixer нашел нарушения , код был исправлен! повторите commit"
@@ -17,7 +17,7 @@ else
 fi
 
 docker exec php ./vendor/bin/twig-cs-fixer lint --fix
-if git diff; then
+if git diff --quiet ; then
     echo "twig-cs-fixer не онаружил проблем"
 else
     echo "Внимание! twig-cs-fixer нашел нарушения , код был исправлен! повторите commit"
