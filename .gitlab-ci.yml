@@ -22,7 +22,8 @@ test:
     before_script: composer i
 
     script:
-        - docker compose exec php php bin/phpunit tests
+        - docker-compose up -d
+        - docker compose exec php make test
         - docker compose down
     rules:
         - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -45,7 +46,6 @@ build:
     before_script:
         - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
     script:
-        - docker-compose up -d database php nginx
         - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -f docker/php/Dockerfile .
         - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     rules:
