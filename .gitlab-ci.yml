@@ -19,8 +19,9 @@ lint:
 test:
     stage: test
     image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    services:
+        - docker:dind
     before_script: composer i
-
     script:
         - docker compose up -d
         - docker compose exec php make test
@@ -39,7 +40,7 @@ doc:
 
 build:
     stage: build
-#    image: docker/compose:latest
+    image: docker/compose:latest
     services:
         - docker:dind
     before_script:
