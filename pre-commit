@@ -5,7 +5,7 @@ if git diff; then
     echo "php-cs-fixer не онаружил проблем"
 else
     echo "Внимание! php-cs-fixer нашел нарушения , код был исправлен! повторите commit"
-    exit 0
+    exit 1
 fi
 
 docker exec php ./vendor/bin/phpstan analyse
