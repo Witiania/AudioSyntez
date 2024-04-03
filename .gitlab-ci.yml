@@ -19,15 +19,12 @@ lint:
 test:
     stage: test
     image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    services:
-        - docker:dind
-    before_script:
-        - composer i
-        - sudo service docker restart
-        - docker version
+    before_script: composer i
+
     script:
         - docker-compose up -d
         - docker-compose exec php make test
+        - docker-compose down
     rules:
         - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
@@ -43,9 +40,9 @@ doc:
 
 build:
     stage: build
-    image: docker:latest
+    image: docker:24.0.5
     services:
-        - docker:dind
+        - docker:24.0.5-dind
     before_script:
         - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
     script:
