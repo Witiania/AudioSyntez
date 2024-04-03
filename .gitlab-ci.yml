@@ -23,8 +23,7 @@ test:
 
     script:
         - docker-compose up -d
-        - docker compose exec php make test
-        - docker compose down
+        - docker-compose exec php make test --no-interaction
     rules:
         - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
