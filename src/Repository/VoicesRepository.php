@@ -2,24 +2,24 @@
 
 namespace App\Repository;
 
-use App\Entity\ListVoices;
+use App\Entity\Voices;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class ListVoicesRepository extends ServiceEntityRepository
+class VoicesRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ListVoices::class);
+        parent::__construct($registry, Voices::class);
     }
 
-    public function save(ListVoices $listVoice): void
+    public function save(Voices $listVoice): void
     {
         $this->getEntityManager()->persist($listVoice);
         $this->getEntityManager()->flush();
     }
 
-    public function delete(ListVoices $listVoice): void
+    public function delete(Voices $listVoice): void
     {
         $this->getEntityManager()->remove($listVoice);
         $this->getEntityManager()->flush();
@@ -30,9 +30,9 @@ class ListVoicesRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function findVoice(string $name): ListVoices
+    public function findVoice(string $name): ?Voices
     {
-       return $this->findOneBy(['voice' => $name]);
+       return $this->findOneBy(['voice' => $name]) ?? null;
     }
 
     public function allVoices(): array

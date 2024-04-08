@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'voices')]
-class Voice
+#[ORM\Table(name: 'orders')]
+#[ORM\HasLifecycleCallbacks]
+class Orders
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,16 +21,58 @@ class Voice
     #[ORM\Column(type: 'integer')]
     private int $FullPrice = 0;
 
-    #[ORM\ManyToOne(targetEntity: ListVoices::class)]
+    #[ORM\ManyToOne(targetEntity: Voices::class)]
     #[ORM\JoinColumn(name: 'voice', referencedColumnName: 'id', unique: true, nullable: false)]
-    private ListVoices $voice;
+    private Voices $voice;
 
     #[ORM\ManyToOne(targetEntity: Users::class)]
-    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id', unique: true, nullable: false)]
+    #[ORM\JoinColumn(name: 'users', referencedColumnName: 'id', unique: true, nullable: false)]
     private Users $user;
 
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
     private string $format = 'mp3';
+
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: false)]
+    private ?\DateTimeInterface $updatedAt = null;
+
+    #[ORM\PrePersist]
+    public function prePersist(): void
+    {
+        $this->setCreatedAt(new \DateTime());
+    }
+
+    #[ORM\PreFlush]
+    public function preFlush(): void
+    {
+        $this->setUpdatedAt(new \DateTime());
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): \DateTimeInterface
+    {
+        return $this->updatedAt ?? new \DateTime();
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
 
     public function getId(): ?int
     {
@@ -54,12 +98,12 @@ class Voice
         return $this->text;
     }
 
-    public function getVoice(): ListVoices
+    public function getVoice(): Voices
     {
         return $this->voice;
     }
 
-    public function setVoice(ListVoices $voice): self
+    public function setVoice(Voices $voice): self
     {
         $this->voice = $voice;
 
@@ -82,4 +126,6 @@ class Voice
         $this->FullPrice = $this->FullPrice * $this->voice->getPrice() * mb_strlen($this->text);
         return $this->FullPrice;
     }
+
+
 }

@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'list_voices')]
-class ListVoices
+#[ORM\Table(name: 'voices')]
+class Voices
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
