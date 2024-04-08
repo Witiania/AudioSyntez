@@ -23,6 +23,10 @@ class Voice
     #[ORM\JoinColumn(name: 'voice', referencedColumnName: 'id', unique: true, nullable: false)]
     private ListVoices $voice;
 
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(name: 'user', referencedColumnName: 'id', unique: true, nullable: false)]
+    private Users $user;
+
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
     private string $format = 'mp3';
 
@@ -62,8 +66,20 @@ class Voice
         return $this;
     }
 
+    public function getUser(): Users
+    {
+        return $this->user;
+    }
+
+    public function setUser(Users $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
     public function getFullPrice(): int
     {
-        return $this->voice->getPrice() * mb_strlen($this->text);
+        $this->FullPrice = $this->FullPrice * $this->voice->getPrice() * mb_strlen($this->text);
+        return $this->FullPrice;
     }
 }
