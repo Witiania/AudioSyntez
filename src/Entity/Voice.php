@@ -14,37 +14,56 @@ class Voice
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    private string $name;
+    private string $text;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private int $price = 0;
+    #[ORM\Column(type: 'integer')]
+    private int $FullPrice = 0;
+
+    #[ORM\ManyToOne(targetEntity: ListVoices::class)]
+    #[ORM\JoinColumn(name: 'voice', referencedColumnName: 'id', unique: true, nullable: false)]
+    private ListVoices $voice;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: false)]
+    private string $format = 'mp3';
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): string
+    public function setId(int $id): self
     {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
+        $this->id = $id;
 
         return $this;
     }
 
-    public function getPrice(): int
+    public function setText(string $text): self
     {
-        return $this->price;
-    }
-
-    public function setPrice(int $balance): self
-    {
-        $this->price = $balance;
+        $this->text = $text;
 
         return $this;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
+    }
+
+    public function getVoice(): ListVoices
+    {
+        return $this->voice;
+    }
+
+    public function setVoice(ListVoices $voice): self
+    {
+        $this->voice = $voice;
+
+        return $this;
+    }
+
+    public function getFullPrice(): int
+    {
+        return $this->voice->getPrice() * mb_strlen($this->text);
     }
 }
