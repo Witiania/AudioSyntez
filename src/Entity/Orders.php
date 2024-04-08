@@ -123,8 +123,13 @@ class Orders
 
     public function getFullPrice(): int
     {
-        $this->FullPrice = $this->FullPrice * $this->voice->getPrice() * mb_strlen($this->text);
         return $this->FullPrice;
+    }
+
+    public function setFullPrice(): self
+    {
+        $this->FullPrice = $this->voice->getPrice() * mb_strlen($this->text);
+        return $this;
     }
 
 
