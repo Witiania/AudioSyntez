@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api;
 
-use App\DTO\VoicesEditDTO;
 use App\DTO\VoicesRequestDTO;
 use App\Exception\IllegalAccessException;
 use App\Exception\UserNotFoundException;
