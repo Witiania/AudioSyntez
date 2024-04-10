@@ -29,7 +29,7 @@ class ExceptionListener
         $response = new JsonResponse(['message' => $exception->getMessage()]);
 
         switch ($exception::class) {
-            case is_subclass_of($exception, AbstractCustomException::class):
+            case $exception instanceof AbstractCustomException:
                 $exception->log($this->logger);
                 $response->setStatusCode($exception->getCode());
                 break;
