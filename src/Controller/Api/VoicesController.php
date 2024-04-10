@@ -21,24 +21,24 @@ class VoicesController extends AbstractController
     private readonly VoiceService $VoiceService;
 
     #[Route('', name: 'voiceList', methods: ['GET'])]
-    public function listVoices(VoicesRepository $listVoiceRep): JsonResponse
+    public function list(VoicesRepository $listVoiceRep): JsonResponse
     {
-        $voices = $listVoiceRep->allVoices();
-        return $this->json($voices);
+        return $this->json($listVoiceRep->findAll());
     }
 
     /**
      * @throws IllegalAccessException
      */
-    #[Route('', name: 'new_voice', methods: ['POST'])]
-    public function newVoice(VoicesRequestDTO $requestDTO): JsonResponse
+    #[Route('', name: 'create_voice', methods: ['POST'])]
+    public function create(VoicesRequestDTO $requestDTO): JsonResponse
     {
-
-        $voice = $this->VoiceService->newVoice(
+        $voice = $this->VoiceService->createVoice(
             $requestDTO->getVoice(),
-            $requestDTO->getPrice()
+            $requestDTO->getPrice(),
+            $requestDTO->getFormat(),
+            $requestDTO->getGender(),
+            $requestDTO->getLanguage()
         );
-
 
         return $this->json($voice);
     }
@@ -47,10 +47,10 @@ class VoicesController extends AbstractController
      * @throws IllegalAccessException
      * @throws UserNotFoundException
      */
-    #[Route('/{name}', name: 'delete_voice', methods: ['DELETE'])]
-    public function deleteVoice(string $name): JsonResponse
+    #[Route('/{id}', name: 'delete_voice', methods: ['DELETE'])]
+    public function delete(string $id): JsonResponse
     {
-        $this->VoiceService->deleteVoice($name);
+        $this->VoiceService->deleteVoice($id);
 
         return $this->json('Successfully deleted');
     }
@@ -59,10 +59,10 @@ class VoicesController extends AbstractController
      * @throws IllegalAccessException
      * @throws UserNotFoundException
      */
-    #[Route('/{name}', name: 'showVoice', methods: ['GET'])]
-    public function showVoice($name): JsonResponse
+    #[Route('/{id}', name: 'getVoice', methods: ['GET'])]
+    public function get(string $id): JsonResponse
     {
-        $voice = $this->VoiceService->showVoice($name);
+        $voice = $this->VoiceService->getVoice($id);
         return $this->json($voice);
     }
 
@@ -70,13 +70,17 @@ class VoicesController extends AbstractController
      * @throws IllegalAccessException
      * @throws UserNotFoundException
      */
-    #[Route('/{name}', name: 'editVoice', methods: ['POST'])]
-    public function editVoice(string $name, VoicesEditDTO $voiceEdDTO): JsonResponse
+    #[Route('/{id}', name: 'editVoice', methods: ['PUT'])]
+    public function update(string $id, VoicesRequestDTO $voiceEdDTO): JsonResponse
     {
         $voice = $this->VoiceService->updateVoice(
-            $name,
+            $id,
+            $voiceEdDTO->getVoice(),
             $voiceEdDTO->getPrice(),
-            $voiceEdDTO->getVoice()
+            $voiceEdDTO->getFormat(),
+            $voiceEdDTO->getGender(),
+            $voiceEdDTO->getLanguage()
+
         );
         return $this->json($voice);
     }

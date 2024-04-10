@@ -22,8 +22,14 @@ class Voices
     #[ORM\Column(type: 'integer', length: 255, nullable: false)]
     private int $price;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    private string $format = 'mp3';
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $format = "oggopus";
+
+    #[ORM\Column(type: 'string')]
+    private string $gender;
+
+    #[ORM\Column(type: 'string')]
+    private string $language = "ru-Ru";
 
     public function getId(): ?string
     {
@@ -41,11 +47,9 @@ class Voices
     {
         return $this->voice;
     }
-
     public function setVoice(string $voice): self
     {
         $this->voice = $voice;
-
         return $this;
     }
 
@@ -57,7 +61,34 @@ class Voices
     public function setPrice(int $price): self
     {
         $this->price = $price;
+        return $this;
+    }
 
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
+    public function setFormat(string $format): self
+    {
+        $this->format = $format;
+        return $this;
+    }
+    public function getGender(): string
+    {
+        return $this->gender;
+    }
+    public function setGender(string $gender): self
+    {
+        $this->gender = $gender;
+        return $this;
+    }
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+    public function setLanguage(string $language): self
+    {
+        $this->language = $language;
         return $this;
     }
 }

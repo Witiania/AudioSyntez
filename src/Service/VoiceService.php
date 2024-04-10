@@ -6,6 +6,7 @@ use App\Entity\Voices;
 use App\Exception\IllegalAccessException;
 use App\Exception\UserNotFoundException;
 use App\Repository\VoicesRepository;
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class VoiceService
@@ -20,7 +21,7 @@ class VoiceService
     /**
      * @throws IllegalAccessException
      */
-    public function newVoice(string $voice, int $price): Voices
+    public function createVoice(string $voice, int $price, string $format, string $gender, string $language): Voices
     {
         if (!$this->security->isGranted('ROLE_ADMIN')) {
             throw new IllegalAccessException();
@@ -28,7 +29,10 @@ class VoiceService
 
         $voice = (new Voices())
             ->setVoice($voice)
-            ->setPrice($price);
+            ->setPrice($price)
+            ->setFormat($format)
+            ->setGender($gender)
+            ->setLanguage($language);
 
         $this->voicesRepository->save($voice);
         return $voice;
@@ -37,13 +41,13 @@ class VoiceService
     /**
      * @throws IllegalAccessException|UserNotFoundException
      */
-    public function deleteVoice(string $name): void
+    public function deleteVoice(string $id): void
     {
         if (!$this->security->isGranted('ROLE_ADMIN')) {
             throw new IllegalAccessException();
         }
 
-        $voice = $this->voicesRepository->findVoice($name);
+        $voice = $this->voicesRepository->find($id);
         if (null === $voice) {
             throw new UserNotFoundException();
         }
@@ -55,12 +59,12 @@ class VoiceService
      * @throws IllegalAccessException
      * @throws UserNotFoundException
      */
-    public function showVoice(string $name): Voices
+    public function getVoice(string $id): Voices
     {
         if (!$this->security->isGranted('ROLE_ADMIN')) {
             throw new IllegalAccessException();
         }
-        $voice = $this->voicesRepository->findVoice($name);
+        $voice = $this->voicesRepository->find($id);
         if (null === $voice) {
             throw new UserNotFoundException();
         }
@@ -71,25 +75,25 @@ class VoiceService
      * @throws IllegalAccessException
      * @throws UserNotFoundException
      */
-    public function updateVoice(string $name, ?int $price, ?string $nameOfVoice): Voices
+    public function updateVoice(string $id, string $nameVoice, int $price, string $format, string $gender, string $language): Voices
     {
         if (!$this->security->isGranted('ROLE_ADMIN')) {
             throw new IllegalAccessException();
         }
 
-        $voice = $this->voicesRepository->findVoice($name);
+        $voice = $this->voicesRepository->find($id);
         if (null === $voice) {
             throw new UserNotFoundException();
         }
 
-        if (null !== $nameOfVoice) {
-            $voice->setVoice($nameOfVoice);
-        }
-        if (null !== $price) {
-            $voice->setPrice($price);
-        }
+        $voice
+            ->setVoice($nameVoice)
+            ->setPrice($price)
+            ->setFormat($format)
+            ->setGender($gender)
+            ->setLanguage($language);
 
-        $this->voicesRepository->edit();
+        $this->voicesRepository->save($voice);
         return $voice;
     }
 }

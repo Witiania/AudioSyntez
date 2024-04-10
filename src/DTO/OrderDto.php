@@ -11,8 +11,8 @@ class OrderDto implements DTOResolverInterface
     #[Assert\NotIdenticalTo(value: 0, message: 'Text cannot be a zero.')]
     private string $text;
 
-    #[Assert\NotBlank(message: 'Voice cannot be empty.')]
-    #[Assert\Type(type: 'App\Entity\Voices', message: 'Voice\'s value {{ value }} is not a Voices entity.')]
+    #[Assert\NotBlank(message: 'Voices cannot be empty.')]
+    #[Assert\Type(type: 'App\Entity\Voices', message: 'Voices\'s value {{ value }} is not a Voices entity.')]
     private Voices $voice;
 
     #[Assert\NotBlank(message: 'User cannot be empty.')]
