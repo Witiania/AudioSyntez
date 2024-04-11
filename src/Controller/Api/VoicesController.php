@@ -14,12 +14,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api/voices', name: 'voices')]
-#[OA\Tag(name: 'Orders', description: 'Orders API')]
+#[OA\Tag(name: 'Voices', description: 'Voices API')]
 class VoicesController extends AbstractController
 {
-    private readonly VoiceService $VoiceService;
 
-    #[Route('', name: 'voiceList', methods: ['GET'])]
+
+    public function __construct(
+        private readonly VoiceService $VoiceService)
+    {}
+
+    #[Route('/', name: 'voiceList', methods: ['GET'])]
     public function list(VoicesRepository $listVoiceRep): JsonResponse
     {
         return $this->json($listVoiceRep->findAll());
@@ -28,7 +32,7 @@ class VoicesController extends AbstractController
     /**
      * @throws IllegalAccessException
      */
-    #[Route('', name: 'create_voice', methods: ['POST'])]
+    #[Route('/', name: 'create_voice', methods: ['POST'])]
     public function create(VoicesRequestDTO $requestDTO): JsonResponse
     {
         $voice = $this->VoiceService->createVoice(

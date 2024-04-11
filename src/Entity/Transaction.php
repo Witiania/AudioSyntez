@@ -2,9 +2,9 @@
 
 namespace App\Entity;
 
-use App\Repository\VoicesRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'transaction')]
@@ -20,7 +20,10 @@ class Transaction
     #[ORM\JoinColumn(name: 'users', referencedColumnName: 'guid')]
     private Users $user;
 
-    #[ORM\Column(type: 'json')]
+    /**
+     * @var array<string, mixed>
+     */
+    #[ORM\Column(type: 'json', options: ['jsonb' => true])]
     private array $specification;
 
     #[ORM\Column(type: 'string')]
@@ -68,11 +71,18 @@ class Transaction
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getSpecification(): array
     {
         return $this->specification;
     }
 
+    /**
+     * @param array<string, mixed> $specification
+     * @return self
+     */
     public function setSpecification(array $specification): self
     {
         $this->specification = $specification;
@@ -138,5 +148,11 @@ class Transaction
         $this->setSpecification($data);
 
         return $this;
+    }
+
+    public function getVoiceId(): string
+    {
+        $data = $this->getSpecification();
+        return $data['voice'];
     }
 }

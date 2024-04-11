@@ -17,7 +17,7 @@ class VoicesRequestDTO implements DTOResolverInterface
 
     #[Assert\NotBlank(message: 'Format cannot be empty.')]
     #[Assert\Type(type: 'string', message: 'format\'s value {{ value }} is not a string.')]
-    private string $format;
+    private string $format = "oggopus";
 
     #[Assert\NotBlank(message: 'Gender cannot be empty.')]
     #[Assert\Type(type: 'string', message: 'gender\'s value {{ value }} is not a string.')]
