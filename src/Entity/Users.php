@@ -46,7 +46,7 @@ class Users implements PasswordAuthenticatedUserInterface, UserInterface
     private ?string $token = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: false)]
-    private ?\DateTimeInterface $createdAt = null;
+private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: false)]
     private ?\DateTimeInterface $updatedAt = null;

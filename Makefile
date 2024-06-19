@@ -1,4 +1,4 @@
-lint: cs-fixer stan twig-fixer
+ lint: cs-fixer stan twig-fixer
 
 cs-fixer:
 	./vendor/bin/php-cs-fixer fix
